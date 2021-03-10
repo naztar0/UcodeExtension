@@ -1,0 +1,34 @@
+{
+  "name": "Ucode Lms Features",
+  "version": "1.0.0",
+  "manifest_version": 2,
+  "description": "Ucode Lms additional features",
+  "author": "Neulen",
+  "homepage_url": "https://lms.ucode.world/",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "scripts": [ "src/js/background.js" ],
+    "persistent": true
+  },
+  "page_action": {
+    "default_icon": "icons/icon19.png",
+    "default_title": "View panel",
+    "default_popup": "src/popup.html"
+  },
+  "permissions": [
+    "https://lms.ucode.world/*",
+    "storage",
+    "webRequest",
+    "tabs"
+  ],
+  "content_scripts": [
+    {
+      "matches": [ "https://lms.ucode.world/*" ],
+      "js": [ "src/js/inject.js" ]
+    }
+  ]
+}
