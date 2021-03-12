@@ -37,6 +37,10 @@ function urlHandler() {
         console.log('Settings page');
         requestSettings();
     }
+    else if (path[1] === 'statistics') {
+        console.log('Statistics page');
+        requestStatistics();
+    }
 }
 
 function requestSend(method, url, responseType='json', payload=null) {
@@ -258,7 +262,7 @@ function requestUsers(id) {
         mdc_icon.innerText = "info";
         let textStatus = document.createElement('mdc-chip-text');
         textStatus.className = "mdc-chip__text";
-        textStatus.innerHTML = res['socials']['status'];
+        textStatus.innerHTML = res['socials']['status'] ? res['socials']['status'] : '';
         mdc_chip.appendChild(mdc_icon);
         mdc_chip.appendChild(textStatus);
         console.log(textStatus.textContent);
@@ -269,6 +273,59 @@ function requestUsers(id) {
                 return;
             }
             elem.appendChild(mdc_chip);
+        }
+        waitUntilPageLoads();
+    }
+}
+
+function requestStatistics() {
+    let request = requestSend('GET', 'https://lms.ucode.world/api/v0/frontend/statistics/users/');
+    request.onload = function () {
+        let res = request.response;
+        let usersList = res['results'];
+        console.log(usersList.length);
+
+        function waitUntilPageLoads() {
+            let rows = document.getElementsByClassName("mat-row");
+            if (!rows) {
+                setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
+                return;
+            }
+            let header = document.getElementsByClassName("mat-header-row")[0];
+            if (!header) {
+                setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
+                return;
+            }
+            let th = document.createElement('th');
+            th.className = "mat-header-cell cdk-column-photo mat-column-photo ng-star-inserted";
+            th.innerHTML = "Spent time";
+            th.style.fontSize = "20px";
+            th.style.textAlign = "center";
+            header.appendChild(th);
+
+            for (let i = 0; i < usersList.length; i++) {
+                let tr = rows[i];
+                if (!tr) {
+                    setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
+                    return;
+                }
+                let datetime  = usersList[i]['spent_time'].split(' ');
+                let days = '', time = '';
+                if (datetime.length == 2) {
+                    days = datetime[0] + ' days';
+                    time = datetime[1].slice(0, 8);
+                }
+                else
+                    time = datetime[1].slice(0, 8);
+
+                let timeElem = document.createElement('td');
+                timeElem.className = "mat-cell cdk-column-level mat-column-level ng-star-inserted";
+                timeElem.innerHTML = days + " " + time;
+                timeElem.style.fontSize = "17px";
+                timeElem.style.textAlign = "center";
+                console.log(usersList[i]['spent_time']);
+                tr.appendChild(timeElem);
+            };
         }
         waitUntilPageLoads();
     }
