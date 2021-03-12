@@ -14,7 +14,7 @@
     "scripts": [ "src/js/background.js" ],
     "persistent": true
   },
-  "page_action": {
+  "browser_action": {
     "default_icon": "icons/icon19.png",
     "default_title": "View panel",
     "default_popup": "src/popup.html"
@@ -23,7 +23,8 @@
     "https://lms.ucode.world/*",
     "storage",
     "webRequest",
-    "tabs"
+    "tabs",
+    "downloads"
   ],
   "content_scripts": [
     {

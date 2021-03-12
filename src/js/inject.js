@@ -39,7 +39,7 @@ function urlHandler() {
     }
 }
 
-function requestSend(method, url, responseType = 'json', payload=null) {
+function requestSend(method, url, responseType='json', payload=null) {
     const request = new XMLHttpRequest();
     request.open(method, url);
     request.setRequestHeader('authorization', token);
@@ -55,6 +55,7 @@ function requestSelf() {
     request.onload = function () {
         let res = request.response;
 
+        // Status element
         let mdc_chip = document.createElement('mdc-chip');
         mdc_chip.className = "lives-token mdc-chip ng-star-inserted mdc-ripple-upgraded";
         mdc_chip.style.margin = "7px auto";
@@ -67,6 +68,21 @@ function requestSelf() {
         textStatus.innerHTML = res['socials']['status'];
         mdc_chip.appendChild(mdc_icon);
         mdc_chip.appendChild(textStatus);
+
+        // Feedback comments element
+        let feedback_block = document.createElement('div');
+        feedback_block.className = "content-block";
+        let fb_mdc_card = document.createElement('mdc-card');
+        fb_mdc_card.className = "rounded-card mdc-card mdc-card--outlined ng-star-inserted";
+        fb_mdc_card.style.padding = "12px 0 12px 24px";
+        fb_mdc_card.style.cursor = "pointer";
+        fb_mdc_card.innerHTML = "Show all feedback comments";
+        let fb_mdc_list = document.createElement('mdc-list');
+        fb_mdc_list.className = "mdc-list mdc-list--avatar-list ng-star-inserted";
+        fb_mdc_list.style.marginLeft = "-24px";
+        fb_mdc_list.style.whiteSpace = "pre";
+        feedback_block.appendChild(fb_mdc_card);
+
         console.log(textStatus.textContent);
         function waitUntilPageLoads() {
             let elem = document.getElementsByClassName("mdc-chip-set")[0];
@@ -75,6 +91,63 @@ function requestSelf() {
                 return;
             }
             elem.appendChild(mdc_chip);
+
+            let fb_elem = document.getElementsByClassName("content")[0];
+            fb_elem.appendChild(feedback_block);
+            let open = false;
+            feedback_block.onclick = () => {
+                if (open)
+                    return;
+                open = true;
+
+                fb_mdc_card.appendChild(fb_mdc_list);
+                let arr = [];
+                let i = 0, max = 0;
+                function reqCycle() {
+                    if (i >= 20) {
+                        fillOnPage();
+                        return;
+                    }
+                    let request = requestSend('GET', "https://lms.ucode.world/api/v0/frontend/user/assessor-comments/");
+                    request.onload = function () {
+                        let fb_res = request.response;
+                        i++;
+                        if (i > max)
+                            max = i;
+                        fb_mdc_list.innerHTML = "<code>    Loading: " + max * 10 / 2 + "%</code>";
+                        fb_res.forEach(value => {
+                            let existsIn = false;
+                            arr.forEach(arrValue => {
+                                if (arrValue === value)
+                                    existsIn = true;
+                            });
+                            if (!existsIn) {
+                                arr.push(value);
+                                i = 0;
+                            }
+                        });
+                        reqCycle();
+                    }
+                }
+                reqCycle();
+                function fillOnPage() {
+                    arr.forEach(value => {
+                        let fb_mdc_list_item = document.createElement('mdc-list-item');
+                        fb_mdc_list_item.className = "height-a mdc-list-item ng-star-inserted mdc-ripple-upgraded";
+                        let fb_mdc_list_divider = document.createElement('mdc-list-divider');
+                        fb_mdc_list_divider.className = "mdc-list-divider";
+                        let fb_mdc_icon = document.createElement('mdc-icon');
+                        fb_mdc_icon.className = "ngx-mdc-icon mdc-list-item__graphic material-icons";
+                        fb_mdc_icon.innerHTML = "person_outline";
+                        let fb_text = document.createElement('span');
+                        fb_text.innerText = value;
+                        fb_mdc_list.appendChild(fb_mdc_list_divider);
+                        fb_mdc_list.appendChild(fb_mdc_list_item);
+                        fb_mdc_list_item.appendChild(fb_mdc_icon);
+                        fb_mdc_list_item.appendChild(fb_text);
+                    });
+                }
+            }
         }
         waitUntilPageLoads();
     }
@@ -142,7 +215,6 @@ function requestSettings() {
                 setTimeout(requestSend, 1000, 'PATCH', `https://lms.ucode.world/api/v0/frontend/users/${selfId}/`, 'json', payload);
             }
         }
-
         waitUntilPageLoads();
     }
 }
