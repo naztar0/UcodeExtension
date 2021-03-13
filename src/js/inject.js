@@ -54,6 +54,54 @@ function requestSend(method, url, responseType='json', payload=null) {
     return request;
 }
 
+function makeStatus(statusStr) {
+    let emojis = {
+        ':attentionsign:':'https://emoji.slack-edge.com/T01A4EB6ES0/attentionsign/d090299a330ae690.gif',
+        ':flykisses:':'https://emoji.slack-edge.com/T01A4EB6ES0/flykisses/5850fb1752432449.gif',
+        ':homer:':'https://emoji.slack-edge.com/T01A4EB6ES0/homer/58ba2251c6375891.gif',
+        ':khpi:':'https://emoji.slack-edge.com/T01A4EB6ES0/khpi/68658d9aa4072b3c.png',
+        ':otp:':'https://emoji.slack-edge.com/T01A4EB6ES0/otp/946307d5eb00550b.png',
+        ':piitu:':'https://emoji.slack-edge.com/T01A4EB6ES0/piitu/114b1c0c94392793.jpg',
+        ':pikadance:':'https://emoji.slack-edge.com/T01A4EB6ES0/pikadance/018cf25073f7f55e.gif',
+        ':pride:':'https://emoji.slack-edge.com/T01A4EB6ES0/pride/56b1bd3388.png',
+        ':rainbowcat:':'https://emoji.slack-edge.com/T01A4EB6ES0/rainbowcat/fdaba9b7dd08accb.gif',
+        ':shipit:':'https://emoji.slack-edge.com/T01A4EB6ES0/squirrel/465f40c0e0.png',
+        ':slack:':'https://emoji.slack-edge.com/T01A4EB6ES0/slack/7d462d2443.png',
+        ':squidward:':'https://emoji.slack-edge.com/T01A4EB6ES0/squidward/4fbd679d28d880d8.gif',
+        ':thumbsup_all:':'https://emoji.slack-edge.com/T01A4EB6ES0/thumbsup_all/50096a1020.gif',
+        ':ucode_connect:':'https://emoji.slack-edge.com/T01A4EB6ES0/ucode_connect/20ae00dd4fab4b5a.png',
+        ':ucode_connect_full:':'https://emoji.slack-edge.com/T01A4EB6ES0/ucode_connect_full/949a9ac9d540828a.png',
+        ':ukraine_emblem:':'https://emoji.slack-edge.com/T01A4EB6ES0/ukraine_emblem/9a54300069fbf7fd.png',
+        ':unicorn:':'https://emoji.slack-edge.com/T01A4EB6ES0/unicorn/ded843537aef0b2a.gif',
+        ':wow:':'https://emoji.slack-edge.com/T01A4EB6ES0/wow/50afad8ae00e499f.gif',
+        ':youtube:':'https://emoji.slack-edge.com/T01A4EB6ES0/youtube/f4d8568e5d66ceab.jpg'};
+    function wrap(imgUrl) {
+        return `<img src="${imgUrl}" style="height:20px;margin-left:2px;margin-bottom:-5px;" alt="">`;
+    }
+
+    if (statusStr) {
+        Object.keys(emojis).forEach(key => {
+            statusStr = statusStr.replaceAll(key, wrap(emojis[key]));
+        });
+    }
+    else {
+        statusStr = '';
+    }
+    return statusStr;
+}
+
+function secondsToDays(seconds) {
+    seconds = Number(seconds);
+    let d = Math.floor(seconds / (3600 * 24));
+    let h = Math.floor(seconds % (3600 * 24) / 3600);
+    let m = Math.floor(seconds % 3600 / 60);
+    let s = Math.floor(seconds % 60);
+    if (h < 10) h = `0${h}`;
+    if (m < 10) m = `0${m}`;
+    if (s < 10) s = `0${s}`;
+    return `${d} days ${h}:${m}:${s}`;
+}
+
 function requestSelf() {
     let request = requestSend('GET', "https://lms.ucode.world/api/v0/frontend/user/self/");
     request.onload = function () {
@@ -63,13 +111,15 @@ function requestSelf() {
         let mdc_chip = document.createElement('mdc-chip');
         mdc_chip.className = "lives-token mdc-chip ng-star-inserted mdc-ripple-upgraded";
         mdc_chip.style.margin = "7px auto";
-        mdc_chip.style.maxWidth = "180px";
+        mdc_chip.style.maxWidth = "260px";
+        mdc_chip.style.height = "auto";
+        mdc_chip.style.minHeight = "32px";
         let mdc_icon = document.createElement("mdc-icon");
         mdc_icon.className = "mdc-chip__icon ngx-mdc-icon material-icons mdc-chip__icon--leading";
         mdc_icon.innerText = "info";
         let textStatus = document.createElement('mdc-chip-text');
         textStatus.className = "mdc-chip__text";
-        textStatus.innerHTML = res['socials']['status'];
+        textStatus.innerHTML = makeStatus(res['socials']['status']);
         mdc_chip.appendChild(mdc_icon);
         mdc_chip.appendChild(textStatus);
 
@@ -87,6 +137,30 @@ function requestSelf() {
         fb_mdc_list.style.whiteSpace = "pre";
         feedback_block.appendChild(fb_mdc_card);
 
+        // More information
+        function moreInfoElement(icon, primaryText, secondaryText, smallText) {
+            let spent_time_block = document.createElement('mdc-list-item');
+            spent_time_block.className = "mdc-list-item mdc-ripple-upgraded";
+            let st_mdc_icon = document.createElement('mdc-icon');
+            st_mdc_icon.className = "ngx-mdc-icon mdc-list-item__graphic material-icons";
+            st_mdc_icon.innerText = icon;
+            let st_mdc_list_item_text = document.createElement('mdc-list-item-text');
+            st_mdc_list_item_text.className = "mdc-list-item__text";
+            let st_primary_text = document.createElement('span');
+            st_primary_text.className = "mdc-list-item__primary-text";
+            st_primary_text.innerText = primaryText;
+            if (smallText)
+                st_primary_text.style.fontSize = "14px";
+            let st_secondary_text = document.createElement('span');
+            st_secondary_text.className = "mdc-list-item__secondary-text ng-star-inserted";
+            st_secondary_text.innerText = secondaryText;
+            spent_time_block.appendChild(st_mdc_icon);
+            spent_time_block.appendChild(st_mdc_list_item_text);
+            st_mdc_list_item_text.appendChild(st_primary_text);
+            st_mdc_list_item_text.appendChild(st_secondary_text);
+            return spent_time_block;
+        }
+
         console.log(textStatus.textContent);
         function waitUntilPageLoads() {
             let elem = document.getElementsByClassName("mdc-chip-set")[0];
@@ -94,8 +168,14 @@ function requestSelf() {
                 setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
                 return;
             }
+            // Left-side menu
+            let leftMenu = document.getElementsByClassName("rounded-card profile-information mdc-card mdc-card--outlined")[0];
+            leftMenu.style.minWidth = "280px";
+
+            // Status
             elem.appendChild(mdc_chip);
 
+            // Feedback
             let fb_elem = document.getElementsByClassName("content")[0];
             fb_elem.appendChild(feedback_block);
             let open = false;
@@ -152,6 +232,21 @@ function requestSelf() {
                     });
                 }
             }
+
+            // More info
+            let moreInfoElem = document.getElementsByClassName("mdc-list mdc-list--avatar-list mdc-list--two-line")[0];
+            let mi_mdc_list_divider = document.createElement('mdc-list-divider');
+            mi_mdc_list_divider.className = "mdc-list-divider";
+            moreInfoElem.appendChild(mi_mdc_list_divider);
+            moreInfoElem.appendChild(moreInfoElement("catching_pokemon", res['adventure_users'][res['adventure_users'].length - 1]['adventure_name'], 'Adventure', true));
+            mi_mdc_list_divider = document.createElement('mdc-list-divider');
+            mi_mdc_list_divider.className = "mdc-list-divider";
+            moreInfoElem.appendChild(mi_mdc_list_divider);
+            moreInfoElem.appendChild(moreInfoElement("timer", secondsToDays(res['spent_time']), 'Spent time'));
+            mi_mdc_list_divider = document.createElement('mdc-list-divider');
+            mi_mdc_list_divider.className = "mdc-list-divider";
+            moreInfoElem.appendChild(mi_mdc_list_divider);
+            moreInfoElem.appendChild(moreInfoElement("label", res['id'], 'User ID'));
         }
         waitUntilPageLoads();
     }
@@ -163,7 +258,7 @@ function requestSettings() {
         let res = request.response;
 
         let selfId = res['id'];
-        let selfStatus = res['socials']['status'];
+        let selfStatus = res['socials']['status'] ? res['socials']['status'] : '';
 
         let mdc_form_field = document.createElement("mdc-form-field");
         mdc_form_field.className = "ngx-form-field-text-field";
@@ -213,7 +308,7 @@ function requestSettings() {
             let button = document.getElementsByClassName("mdc-button ngx-mdc-button--primary mdc-ripple-upgraded")[0];
             button.removeAttribute("disabled");
             button.onfocus = () => {
-                let selfStatus = document.getElementById("statusInput").value;
+                let selfStatus = document.getElementById("statusInput").value.replaceAll('"', '\\"');
                 let payload = `{"socials":{"status":"${selfStatus}"}}`;
                 console.log(payload);
                 setTimeout(requestSend, 1000, 'PATCH', `https://lms.ucode.world/api/v0/frontend/users/${selfId}/`, 'json', payload);
@@ -254,6 +349,7 @@ function requestUsers(id) {
         let res = request.response;
 
         let mdc_chip = document.createElement('mdc-chip');
+        mdc_chip.id = "ext-status";
         mdc_chip.className = "lives-token mdc-chip ng-star-inserted mdc-ripple-upgraded";
         mdc_chip.style.margin = "7px auto";
         mdc_chip.style.maxWidth = "180px";
@@ -262,7 +358,7 @@ function requestUsers(id) {
         mdc_icon.innerText = "info";
         let textStatus = document.createElement('mdc-chip-text');
         textStatus.className = "mdc-chip__text";
-        textStatus.innerHTML = res['socials']['status'] ? res['socials']['status'] : '';
+        textStatus.innerHTML = makeStatus(res['socials']['status']);
         mdc_chip.appendChild(mdc_icon);
         mdc_chip.appendChild(textStatus);
         console.log(textStatus.textContent);
@@ -272,6 +368,9 @@ function requestUsers(id) {
                 setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
                 return;
             }
+            let prevElem = document.getElementById("ext-status");
+            if (prevElem)
+                prevElem.parentNode.removeChild(prevElem);
             elem.appendChild(mdc_chip);
         }
         waitUntilPageLoads();
@@ -311,7 +410,7 @@ function requestStatistics() {
                 }
                 let datetime  = usersList[i]['spent_time'].split(' ');
                 let days = '', time = '';
-                if (datetime.length == 2) {
+                if (datetime.length === 2) {
                     days = datetime[0] + ' days';
                     time = datetime[1].slice(0, 8);
                 }
@@ -325,7 +424,7 @@ function requestStatistics() {
                 timeElem.style.textAlign = "center";
                 console.log(usersList[i]['spent_time']);
                 tr.appendChild(timeElem);
-            };
+            }
         }
         waitUntilPageLoads();
     }
