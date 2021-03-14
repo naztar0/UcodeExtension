@@ -5,40 +5,41 @@ let url = null;
 chrome.storage.sync.get(['token', 'url'], function (result) {
     token = result.token;
     url = new URL(result.url);
-    console.log('Value currently is ' + token);
-    console.log('Url currently is ' + url);
     urlHandler();
-})
+});
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
-    chrome.storage.sync.get(['url', 'token'], function (result) {
-        url = new URL(result.url);
-        token = result.token;
-        console.log('Url currently is ' + url);
-        urlHandler();
-    })
-})
+    chrome.storage.sync.get(changes, function (result) {
+        for (let key in changes) {
+            if (key === 'url') {
+                url = new URL(result.url);
+                urlHandler();
+            }
+            else if (key === 'token') {
+                token = result.token;
+            }
+            else if (key === 'statistics_url') {
+                requestStatistics(result.statistics_url);
+            }
+        }
+    });
+});
 
 function urlHandler() {
     let path = url.pathname.split('/');
     if (path[1] === '') {
-        console.log('Home page');
         requestSelf();
     }
     else if (path[1] === 'challenge_users') {
-        console.log('Challenge page');
         requestChallenge(path[2]);
     }
     else if (path[1] === 'users') {
-        console.log('Users page');
         requestUsers(path[2]);
     }
     else if (path[1] === 'settings') {
-        console.log('Settings page');
         requestSettings();
     }
     else if (path[1] === 'statistics') {
-        console.log('Statistics page');
         requestStatistics();
     }
 }
@@ -61,6 +62,7 @@ function makeStatus(statusStr) {
         ':homer:':'https://emoji.slack-edge.com/T01A4EB6ES0/homer/58ba2251c6375891.gif',
         ':khpi:':'https://emoji.slack-edge.com/T01A4EB6ES0/khpi/68658d9aa4072b3c.png',
         ':otp:':'https://emoji.slack-edge.com/T01A4EB6ES0/otp/946307d5eb00550b.png',
+        ':pepedance:':'https://i.pinimg.com/originals/5d/ee/91/5dee91700de2b898f61260bea7322a5c.gif',
         ':piitu:':'https://emoji.slack-edge.com/T01A4EB6ES0/piitu/114b1c0c94392793.jpg',
         ':pikadance:':'https://emoji.slack-edge.com/T01A4EB6ES0/pikadance/018cf25073f7f55e.gif',
         ':pride:':'https://emoji.slack-edge.com/T01A4EB6ES0/pride/56b1bd3388.png',
@@ -161,7 +163,6 @@ function requestSelf() {
             return spent_time_block;
         }
 
-        console.log(textStatus.textContent);
         function waitUntilPageLoads() {
             let elem = document.getElementsByClassName("mdc-chip-set")[0];
             if (!elem) {
@@ -308,9 +309,8 @@ function requestSettings() {
             let button = document.getElementsByClassName("mdc-button ngx-mdc-button--primary mdc-ripple-upgraded")[0];
             button.removeAttribute("disabled");
             button.onfocus = () => {
-                let selfStatus = document.getElementById("statusInput").value.replaceAll('"', '\\"');
+                let selfStatus = document.getElementById(input.id).value.replaceAll('"', '\\"');
                 let payload = `{"socials":{"status":"${selfStatus}"}}`;
-                console.log(payload);
                 setTimeout(requestSend, 1000, 'PATCH', `https://lms.ucode.world/api/v0/frontend/users/${selfId}/`, 'json', payload);
             }
         }
@@ -322,7 +322,6 @@ function requestChallenge(id) {
     let request = requestSend('GET', `https://lms.ucode.world/api/v0/frontend/challenge_users/${id}/`);
     request.onload = function () {
         let res = request.response;
-        console.log("Experience: " + res['challenge']['experience']);
 
         let textExp = document.createElement('h3');
         textExp.textContent = "Experience: " + res['challenge']['experience'];
@@ -358,17 +357,17 @@ function requestUsers(id) {
         mdc_icon.innerText = "info";
         let textStatus = document.createElement('mdc-chip-text');
         textStatus.className = "mdc-chip__text";
-        textStatus.innerHTML = makeStatus(res['socials']['status']);
+        if (res['socials'])
+            textStatus.innerHTML = makeStatus(res['socials']['status']);
         mdc_chip.appendChild(mdc_icon);
         mdc_chip.appendChild(textStatus);
-        console.log(textStatus.textContent);
         function waitUntilPageLoads() {
             let elem = document.getElementsByClassName("mdc-chip-set")[0];
             if (!elem) {
                 setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
                 return;
             }
-            let prevElem = document.getElementById("ext-status");
+            let prevElem = document.getElementById(mdc_chip.id);
             if (prevElem)
                 prevElem.parentNode.removeChild(prevElem);
             elem.appendChild(mdc_chip);
@@ -377,12 +376,11 @@ function requestUsers(id) {
     }
 }
 
-function requestStatistics() {
-    let request = requestSend('GET', 'https://lms.ucode.world/api/v0/frontend/statistics/users/');
+function requestStatistics(url=null) {
+    let request = requestSend('GET', url ? url : 'https://lms.ucode.world/api/v0/frontend/statistics/users/');
     request.onload = function () {
         let res = request.response;
         let usersList = res['results'];
-        console.log(usersList.length);
 
         function waitUntilPageLoads() {
             let rows = document.getElementsByClassName("mat-row");
@@ -390,42 +388,78 @@ function requestStatistics() {
                 setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
                 return;
             }
-            let header = document.getElementsByClassName("mat-header-row")[0];
-            if (!header) {
-                setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
-                return;
-            }
-            let th = document.createElement('th');
-            th.className = "mat-header-cell cdk-column-photo mat-column-photo ng-star-inserted";
-            th.innerHTML = "Spent time";
-            th.style.fontSize = "20px";
-            th.style.textAlign = "center";
-            header.appendChild(th);
-
-            for (let i = 0; i < usersList.length; i++) {
-                let tr = rows[i];
-                if (!tr) {
+            if (!url) {
+                let header = document.getElementsByClassName("mat-header-row")[0];
+                if (!header) {
                     setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
                     return;
                 }
-                let datetime  = usersList[i]['spent_time'].split(' ');
-                let days = '', time = '';
-                if (datetime.length === 2) {
-                    days = datetime[0] + ' days';
-                    time = datetime[1].slice(0, 8);
-                }
-                else
-                    time = datetime[1].slice(0, 8);
+                let th = document.createElement('th');
+                th.className = "mat-header-cell cdk-column-photo mat-column-photo ng-star-inserted";
+                th.innerHTML = "Spent time";
+                th.style.fontSize = "20px";
+                th.style.textAlign = "center";
+                header.appendChild(th);
+            }
+            let elemToCheckCreation = document.createElement('div');
+            elemToCheckCreation.id = 'elemToCheckCreation';
+            elemToCheckCreation.style.display = "none";
 
-                let timeElem = document.createElement('td');
-                timeElem.className = "mat-cell cdk-column-level mat-column-level ng-star-inserted";
-                timeElem.innerHTML = days + " " + time;
-                timeElem.style.fontSize = "17px";
-                timeElem.style.textAlign = "center";
-                console.log(usersList[i]['spent_time']);
-                tr.appendChild(timeElem);
+            if (!document.getElementById(elemToCheckCreation.id)) {
+                if (!rows[0]) {
+                    setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
+                    return;
+                }
+                rows[0].appendChild(elemToCheckCreation);
+                for (let i = 0; i < usersList.length; i++) {
+                    let tr = rows[i];
+                    if (!tr) {
+                        setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
+                        return;
+                    }
+                    let datetime  = usersList[i]['spent_time'].split(' ');
+                    let days = '', time = '';
+                    if (datetime.length === 2) {
+                        days = datetime[0] + ' days';
+                        time = datetime[1].slice(0, 8);
+                    }
+                    else
+                        time = datetime[0].slice(0, 8);
+
+                    let timeElem = document.createElement('td');
+                    timeElem.className = "mat-cell cdk-column-level mat-column-level ng-star-inserted";
+                    timeElem.innerHTML = days + " " + time;
+                    timeElem.style.fontSize = "17px";
+                    timeElem.style.textAlign = "center";
+                    tr.appendChild(timeElem);
+                }
             }
         }
         waitUntilPageLoads();
     }
 }
+
+// Так, чисто поиграться, потом удалю, наверное =)
+let sound = false;
+document.addEventListener('keypress', (event) => {
+    function playPokemon(n) {
+        let audio = new Audio(`https://raw.githubusercontent.com/naztar0/PokeChat/main/client/data/pokemon-audio/${n}.wav`);
+        audio.play();
+    }
+    const keyName = event.key;
+    if (keyName === 'a')
+        sound = !sound;
+    else if (sound) {
+        if (keyName === 'p')
+            playPokemon(9);
+        else if (keyName === 'b')
+            playPokemon(1);
+        else if (keyName === 'c')
+            playPokemon(2);
+        else if (keyName === 's')
+            playPokemon(4);
+        else if (keyName === 'q') {
+            new Audio("https://www.myinstants.com/media/sounds/ear-rape-moaning-girl-troll-sound-crappy-long-edition-loudtronix-hq.mp3").play();
+        }
+    }
+});

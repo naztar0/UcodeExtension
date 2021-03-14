@@ -9,7 +9,7 @@ chrome.webRequest.onSendHeaders.addListener(
                     chrome.storage.sync.get(['token'], function(result) {
                         if (result.token === token)
                             refresh = false;
-                    })
+                    });
                     if (!refresh)
                         break;
                     console.log(token);
@@ -17,6 +17,12 @@ chrome.webRequest.onSendHeaders.addListener(
                     break;
                 }
             }
+        }
+        else if (details.url.slice(0, 57) === "https://lms.ucode.world/api/v0/frontend/statistics/users/") {
+            chrome.storage.sync.get(['statistics_url'], function(result) {
+                if (result.statistics_url !== details.url)
+                    chrome.storage.sync.set({statistics_url: details.url}, () => {});
+            });
         }
     },
     {urls: ["https://lms.ucode.world/*"]}, ['requestHeaders']
