@@ -272,6 +272,7 @@ function requestSettings() {
         input.className = "mdc-text-field__input";
         input.id = "statusInput";
         input.type = "text";
+        input.maxLength = "100";
         input.value = selfStatus;
         let mdc_icon = document.createElement("mdc-icon");
         mdc_icon.className = "mdc-text-field__icon ngx-mdc-icon material-icons";
