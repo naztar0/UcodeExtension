@@ -42,10 +42,10 @@ a {
     background: #777;
     color: #fff;
 }
-#header.willSuspend {
+#header.available {
     background: #3477db;
 }
-#header.blockedFile {
+#header.error {
     background: #a70707;
 }
 
@@ -66,6 +66,49 @@ a {
 .menuOption:hover .optionText {
     text-decoration: underline;
 }
+
+#menuSlots {
+    line-height: 2em;
+    font-size: 16px;
+    white-space: nowrap;
+    padding: 0 15px;
+    cursor: default;
+}
+#slots {
+    display: flex;
+    flex-direction: column;
+}
+.slotText:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+#menuAssessor {
+    line-height: 2em;
+    font-size: 16px;
+    white-space: nowrap;
+    padding: 0 15px;
+    cursor: default;
+}
+#assessor-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+}
+.assessor-block{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 20px;
+    text-align: center;
+    margin: 10px;
+}
+#assessor {
+    display: flex;
+    flex-direction: column;
+}
+
 /* dark theme for night lurkers */
 .dark {
     background: #353535;
