@@ -1,28 +1,63 @@
 let token = null;
 let url = null;
 
+let downloadPdfMenu = document.getElementById('download-pdf').parentNode.parentNode;
+downloadPdfMenu.style.display = "none";
+let slotsMenu = document.getElementById('menuSlots').parentNode;
+slotsMenu.style.display = "none";
+let assessorMenu = document.getElementById('menuAssessor').parentNode;
+assessorMenu.style.display = "none";
+let statusText = document.getElementById('statusDetail');
+let header = document.getElementById('header');
+statusText.innerHTML = "Nothing to do";
+statusText.className = '';
+
 chrome.storage.sync.get(['token', 'url'], function (result) {
     token = result.token;
     url = new URL(result.url);
     console.log('Value currently is ' + token);
     console.log('Url currently is ' + url);
     urlHandler();
-})
+});
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
-    chrome.storage.sync.get(['url', 'token'], function (result) {
-        url = new URL(result.url);
-        token = result.token;
-        console.log('Url currently is ' + url);
-        urlHandler();
-    })
-})
+    downloadPdfMenu.style.display = "none";
+    slotsMenu.style.display = "none";
+    statusText.innerHTML = "Nothing to do";
+    header.className = '';
+    chrome.storage.sync.get(changes, function (result) {
+        for (let key in changes) {
+            if (key === 'url') {
+                url = new URL(result.url);
+                urlHandler();
+            }
+            else if (key === 'token') {
+                token = result.token;
+            }
+            else if (key === 'statistics_url') {
+                requestStatistics(result.statistics_url);
+            }
+            else if (key === 'slots_challenge') {
+                displaySlotsChallenge(result.slots_challenge);
+            }
+        }
+    });
+});
 
 function urlHandler() {
     let path = url.pathname.split('/');
     if (path[1] === 'pdf') {
+        downloadPdfMenu.style.display = "block";
+        statusText.innerHTML = "You can download pdf";
+        header.className = "available";
         let dlButton = document.getElementById("download-pdf");
         dlButton.onclick = () => requestPdf(path[2], path[3]);
+    }
+    else if (path[2] === 'slots') {
+        slotsMenu.style.display = "block";
+        statusText.innerHTML = "You can subscribe to assessment";
+        header.className = "available";
+        requestSlotsChallenge(path[1]);
     }
 }
 
@@ -63,5 +98,58 @@ function requestPdf(val1, val2) {
             url: url,
             filename: `${val2}.pdf`
         });
+    }
+}
+
+function requestSlotsChallenge(challenge) {
+    let request = requestSend('GET', 'https://lms.ucode.world/api/v0/frontend/slots/available-slots/?challenge=' + challenge);
+    request.onload = function () {
+        let res = request.response;
+        let slotsElem = document.getElementById('slots');
+        for (let i = 0; i < res.length; i++) {
+            let slotsList = res[i]['grouped_slots'];
+            for (let j = 0; j < slotsList.length; j++) {
+                let begin = slotsList[j]['begin_at'].slice(11, 16);
+                let id = slotsList[j]['id'];
+                console.log(begin);
+                console.log(id);
+                
+                let slotText = document.createElement('span');
+                slotText.className = "slotText";
+                slotText.innerHTML = begin;
+                slotText.onclick = () => subscribeToAssessment(id, challenge);
+                slotsElem.appendChild(slotText);
+            }
+        }
+    }
+}
+
+function subscribeToAssessment(md5, challenge) {
+    let request = requestSend('PUT', `https://lms.ucode.world/api/v0/frontend/slots/${md5}/subscribe-to-assessment/`, 'json', `{"challenge":"${challenge}"}`);
+    request.onload = function () {
+        let res = request.response;
+        let user = res['user'];
+        let id = res['id'];
+        let requestUser = requestSend('GET', `https://lms.ucode.world/api/v0/frontend/users/${user}/`);
+        requestUser.onload = function () {
+            let resUser = requestUser.response;
+            slotsMenu.style.display = "none";
+            statusText.innerHTML = "You can view your assessor";
+            header.className = "available";
+            assessorMenu.style.display = "block";
+            let elemName = document.getElementById("assessor-name");
+            let elemImg = document.getElementById("assessor-img");
+            elemName.innerText = resUser['username'];
+            elemImg.src = "https://lms.ucode.world/api/" + resUser['photo_url'];
+        }
+    }
+}
+
+function cancelAssessment(id) {
+    let request = requestSend('PUT', `https://lms.ucode.world/api/v0/frontend/slots/${id}/cancel-assessment/`);
+    request.onload = function () {
+        let res = request.response;
+        let user = res['user'];
+        let id = res['id'];
     }
 }

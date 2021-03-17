@@ -121,7 +121,8 @@ function requestSelf() {
         mdc_icon.innerText = "info";
         let textStatus = document.createElement('mdc-chip-text');
         textStatus.className = "mdc-chip__text";
-        textStatus.innerHTML = makeStatus(res['socials']['status']);
+        if (res['socials'])
+            textStatus.innerHTML = makeStatus(res['socials']['status']);
         mdc_chip.appendChild(mdc_icon);
         mdc_chip.appendChild(textStatus);
 
@@ -441,26 +442,29 @@ function requestStatistics(url=null) {
 }
 
 // Так, чисто поиграться, потом удалю, наверное =)
-let sound = false;
+let e_e_cnt = 0;
+const taps = 10;
 document.addEventListener('keypress', (event) => {
-    function playPokemon(n) {
+    function e_e_play(n) {
         let audio = new Audio(`https://raw.githubusercontent.com/naztar0/PokeChat/main/client/data/pokemon-audio/${n}.wav`);
         audio.play();
     }
     const keyName = event.key;
-    if (keyName === 'a')
-        sound = !sound;
-    else if (sound) {
-        if (keyName === 'p')
-            playPokemon(9);
-        else if (keyName === 'b')
-            playPokemon(1);
-        else if (keyName === 'c')
-            playPokemon(2);
-        else if (keyName === 's')
-            playPokemon(4);
-        else if (keyName === 'q') {
-            new Audio("https://www.myinstants.com/media/sounds/ear-rape-moaning-girl-troll-sound-crappy-long-edition-loudtronix-hq.mp3").play();
-        }
+    if (keyName === 'a') {
+        if (++e_e_cnt == taps)
+            new Audio("https://raw.githubusercontent.com/naztar0/PokeChat/main/client/data/sounds/high_pop.wav").play();
     }
+    else if (keyName === 'p' && e_e_cnt >= taps)
+        e_e_play(9);
+    else if (keyName === 'b' && e_e_cnt >= taps)
+        e_e_play(1);
+    else if (keyName === 'c' && e_e_cnt >= taps)
+        e_e_play(2);
+    else if (keyName === 's' && e_e_cnt >= taps)
+        e_e_play(4);
+    else if (keyName === 'q' && e_e_cnt >= taps) {
+        new Audio("https://www.myinstants.com/media/sounds/ear-rape-moaning-girl-troll-sound-crappy-long-edition-loudtronix-hq.mp3").play();
+    }
+    else
+        e_e_cnt = 0;
 });
