@@ -12,7 +12,6 @@ chrome.webRequest.onSendHeaders.addListener(
                     });
                     if (!refresh)
                         break;
-                    console.log(token);
                     chrome.storage.sync.set({token: token}, () => {});
                     break;
                 }
@@ -30,8 +29,35 @@ chrome.webRequest.onSendHeaders.addListener(
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.url) {
-        let url = new URL(changeInfo.url);
-        if (url.hostname === "lms.ucode.world")
-            chrome.storage.sync.set({url: changeInfo.url}, () => {});
+        urlHandler(changeInfo.url);
     }
-})
+});
+
+chrome.tabs.onActivated.addListener((tabId, windowId) => {
+    chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
+        urlHandler(tabs[0].url);
+    });
+});
+
+function urlHandler(url) {
+    url = new URL(url);
+    if (url.hostname === "lms.ucode.world") {
+        chrome.storage.sync.set({url: url.href}, () => {});
+        setBadge(url);
+    }
+    else {
+        chrome.storage.sync.set({url: null}, () => {});
+        chrome.browserAction.setBadgeText({text:''});
+    }
+}
+
+function setBadge(url) {
+    chrome.browserAction.setBadgeBackgroundColor({color:"#36b4c8"});
+    let path = url.pathname.split('/');
+    if (path[1] === 'pdf')
+        chrome.browserAction.setBadgeText({text:"PDF"});
+    else if (path[2] === 'slots')
+        chrome.browserAction.setBadgeText({text:"S"});
+    else
+        chrome.browserAction.setBadgeText({text:''});
+}

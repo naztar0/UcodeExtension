@@ -12,6 +12,8 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     chrome.storage.sync.get(changes, function (result) {
         for (let key in changes) {
             if (key === 'url') {
+                if (!result.url)
+                    continue;
                 url = new URL(result.url);
                 urlHandler();
             }
@@ -111,6 +113,7 @@ function requestSelf() {
 
         // Status element
         let mdc_chip = document.createElement('mdc-chip');
+        mdc_chip.id = "elemToCheckCreation";
         mdc_chip.className = "lives-token mdc-chip ng-star-inserted mdc-ripple-upgraded";
         mdc_chip.style.margin = "7px auto";
         mdc_chip.style.maxWidth = "260px";
@@ -170,6 +173,8 @@ function requestSelf() {
                 setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
                 return;
             }
+            if (document.getElementById(mdc_chip.id))
+                return;
             // Left-side menu
             let leftMenu = document.getElementsByClassName("rounded-card profile-information mdc-card mdc-card--outlined")[0];
             leftMenu.style.minWidth = "280px";
@@ -240,7 +245,8 @@ function requestSelf() {
             let mi_mdc_list_divider = document.createElement('mdc-list-divider');
             mi_mdc_list_divider.className = "mdc-list-divider";
             moreInfoElem.appendChild(mi_mdc_list_divider);
-            moreInfoElem.appendChild(moreInfoElement("catching_pokemon", res['adventure_users'][res['adventure_users'].length - 1]['adventure_name'], 'Adventure', true));
+            if (res['adventure_users'])
+                moreInfoElem.appendChild(moreInfoElement("catching_pokemon", res['adventure_users'][res['adventure_users'].length - 1]['adventure_name'], 'Adventure', true));
             mi_mdc_list_divider = document.createElement('mdc-list-divider');
             mi_mdc_list_divider.className = "mdc-list-divider";
             moreInfoElem.appendChild(mi_mdc_list_divider);
@@ -263,6 +269,7 @@ function requestSettings() {
         let selfStatus = res['socials']['status'] ? res['socials']['status'] : '';
 
         let mdc_form_field = document.createElement("mdc-form-field");
+        mdc_form_field.id = "elemToCheckCreation";
         mdc_form_field.className = "ngx-form-field-text-field";
         mdc_form_field.style.display = "block";
         mdc_form_field.style.marginBottom = "10px";
@@ -307,6 +314,8 @@ function requestSettings() {
                 setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
                 return;
             }
+            if (document.getElementById("elemToCheckCreation"))
+                return;
             elem.appendChild(mdc_form_field);
             let button = document.getElementsByClassName("mdc-button ngx-mdc-button--primary mdc-ripple-upgraded")[0];
             button.removeAttribute("disabled");
@@ -326,19 +335,18 @@ function requestChallenge(id) {
         let res = request.response;
 
         let textExp = document.createElement('h3');
+        textExp.id = "elemToCheckCreation";
         textExp.textContent = "Experience: " + res['challenge']['experience'];
         textExp.style.marginLeft = "15px";
-        let textId = document.createElement('h3');
-        textId.textContent = "Challenge id: " + res['challenge']['id'];
-        textId.style.marginLeft = "15px";
         function waitUntilPageLoads() {
             let header = document.getElementsByClassName("header")[0];
             if (!header) {
                 setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
                 return;
             }
+            if (document.getElementById("elemToCheckCreation"))
+                return;
             header.appendChild(textExp);
-            header.appendChild(textId);
         }
         waitUntilPageLoads();
     }
@@ -350,7 +358,7 @@ function requestUsers(id) {
         let res = request.response;
 
         let mdc_chip = document.createElement('mdc-chip');
-        mdc_chip.id = "ext-status";
+        mdc_chip.id = "elemToCheckCreation";
         mdc_chip.className = "lives-token mdc-chip ng-star-inserted mdc-ripple-upgraded";
         mdc_chip.style.margin = "7px auto";
         mdc_chip.style.maxWidth = "180px";
@@ -441,7 +449,6 @@ function requestStatistics(url=null) {
     }
 }
 
-// Так, чисто поиграться, потом удалю, наверное =)
 let e_e_cnt = 0;
 const taps = 10;
 document.addEventListener('keypress', (event) => {
@@ -451,7 +458,7 @@ document.addEventListener('keypress', (event) => {
     }
     const keyName = event.key;
     if (keyName === 'a') {
-        if (++e_e_cnt == taps)
+        if (++e_e_cnt === taps)
             new Audio("https://raw.githubusercontent.com/naztar0/PokeChat/main/client/data/sounds/high_pop.wav").play();
     }
     else if (keyName === 'p' && e_e_cnt >= taps)

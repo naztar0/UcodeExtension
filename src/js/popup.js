@@ -1,22 +1,16 @@
 let token = null;
 let url = null;
 
-let downloadPdfMenu = document.getElementById('download-pdf').parentNode.parentNode;
-downloadPdfMenu.style.display = "none";
+let downloadPdfMenu = document.getElementById('download-pdf').parentNode;
 let slotsMenu = document.getElementById('menuSlots').parentNode;
-slotsMenu.style.display = "none";
 let assessorMenu = document.getElementById('menuAssessor').parentNode;
-assessorMenu.style.display = "none";
 let statusText = document.getElementById('statusDetail');
 let header = document.getElementById('header');
-statusText.innerHTML = "Nothing to do";
-statusText.className = '';
+resetPopup();
 
 chrome.storage.sync.get(['token', 'url'], function (result) {
     token = result.token;
     url = new URL(result.url);
-    console.log('Value currently is ' + token);
-    console.log('Url currently is ' + url);
     urlHandler();
 });
 
@@ -28,6 +22,10 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     chrome.storage.sync.get(changes, function (result) {
         for (let key in changes) {
             if (key === 'url') {
+                if (!result.url) {
+                    resetPopup();
+                    continue;
+                }
                 url = new URL(result.url);
                 urlHandler();
             }
@@ -37,12 +35,17 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
             else if (key === 'statistics_url') {
                 requestStatistics(result.statistics_url);
             }
-            else if (key === 'slots_challenge') {
-                displaySlotsChallenge(result.slots_challenge);
-            }
         }
     });
 });
+
+function resetPopup() {
+    downloadPdfMenu.style.display = "none";
+    slotsMenu.style.display = "none";
+    assessorMenu.style.display = "none";
+    statusText.innerHTML = "Nothing to do";
+    statusText.className = '';
+}
 
 function urlHandler() {
     let path = url.pathname.split('/');
@@ -92,7 +95,6 @@ function requestPdf(val1, val2) {
     request.onload = function () {
         let res = request.response;
         let blob = b64toBlob(res['data'], 'application/pdf');
-        console.log(blob);
         let url = URL.createObjectURL(blob);
         chrome.downloads.download({
             url: url,
@@ -111,8 +113,6 @@ function requestSlotsChallenge(challenge) {
             for (let j = 0; j < slotsList.length; j++) {
                 let begin = slotsList[j]['begin_at'].slice(11, 16);
                 let id = slotsList[j]['id'];
-                console.log(begin);
-                console.log(id);
                 
                 let slotText = document.createElement('span');
                 slotText.className = "slotText";
