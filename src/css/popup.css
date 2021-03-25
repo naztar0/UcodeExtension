@@ -19,11 +19,28 @@ body {
     position: relative;
     font-size: 15px;
     background: #fff;
+    user-select: none;
 }
 @media (min-resolution: 192dpi) {
     body {
         font-weight: 300;
     }
+}
+.centerVertical {
+    margin-top: 15%;
+}
+.materialIcons {
+    font-family: 'Material Icons', serif;
+    height: min-content;
+    border-radius: 50%;
+    padding: 5px;
+}
+.bigIcons {
+    font-size: 30px;
+}
+.selectableIcons:hover {
+    background: #bbbbbb;
+    transition: all ease-out 0.5s;
 }
 
 a {
@@ -98,15 +115,32 @@ a {
 .assessor-block{
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-between;
     font-weight: bold;
     font-size: 20px;
     text-align: center;
     margin: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 #assessor {
     display: flex;
     flex-direction: column;
+}
+.loading-gif {
+    height: 12px;
+    margin-left: 20px;
+}
+.tooltip {
+    display: none;
+    font-size: 10px;
+    position: absolute;
+    margin-top: -40px;
+}
+.iconBlock {
+    font-size: 15px;
+    display: inline-block;
+    margin-top: 15%;
 }
 
 /* dark theme for night lurkers */

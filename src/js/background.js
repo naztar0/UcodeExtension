@@ -40,7 +40,11 @@ chrome.tabs.onActivated.addListener((tabId, windowId) => {
 });
 
 function urlHandler(url) {
-    url = new URL(url);
+    try {
+        url = new URL(url);
+    } catch (TypeError) {
+        return;
+    }
     if (url.hostname === "lms.ucode.world") {
         chrome.storage.sync.set({url: url.href}, () => {});
         setBadge(url);

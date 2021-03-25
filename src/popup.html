@@ -17,7 +17,10 @@
         </div>
         <div class="group">
             <div id="menuSlots">
-                <span>Available slots</span>
+                <div>
+                    <span>Available slots</span>
+                    <img class="loading-gif" id="slots-loading-gif" src="media/loading.gif" alt=""/>
+                </div>
                 <div id="slots">
                     <!-- <span class="slotText">15:30</span> -->
                 </div>
@@ -25,16 +28,26 @@
         </div>
         <div class="group">
             <div id="menuAssessor">
-                <span>You will assessed by:</span>
+                <span id="assessor-header">You will assessed by:</span>
+                <img class="loading-gif" id="assessor-loading-gif" src="media/loading.gif" alt=""/>
                 <div class="assessor-block">
+                    <div class="iconBlock">
+                        <span class="tooltip" id="cancel-assessment-tooltip" style="margin-left: -23px;">Cancel assessment</span>
+                        <span class="materialIcons bigIcons selectableIcons centerVertical" id="cancel-assessment-button">clear</span>
+                    </div>
                     <div id="assessor">
                         <img id="assessor-img" src="" alt="">
                         <span id="assessor-name"></span>
+                    </div>
+                    <div class="iconBlock">
+                        <span class="tooltip" id="try-again-tooltip" style="margin-left: -3px;">Try again</span>
+                        <span class="materialIcons bigIcons selectableIcons centerVertical" id="try-again-button">refresh</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <script src="js/popup.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </body>
 </html>
