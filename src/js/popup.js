@@ -112,7 +112,7 @@ function requestPdf(val1, val2) {
     }
 }
 
-function requestSlotsChallenge(challenge) {
+function requestSlotsChallenge(challenge, mBegin=null) {
     let request = requestSend('GET', 'https://lms.ucode.world/api/v0/frontend/slots/available-slots/?challenge=' + challenge);
     request.onload = function () {
         slotsLoadingGif.style.display = "none";
@@ -129,18 +129,24 @@ function requestSlotsChallenge(challenge) {
             for (let j = 0; j < slotsList.length; j++) {
                 let begin = slotsList[j]['begin_at'].slice(11, 16);
                 let id = slotsList[j]['id'];
-                
+                // console.log('id: ' + id);
+                if (mBegin) {
+                    if (mBegin === begin)
+                        return id;
+                    continue;
+                }
+
                 let slotText = document.createElement('span');
                 slotText.className = "slotText";
                 slotText.innerHTML = begin;
-                slotText.onclick = () => subscribeToAssessment(id, challenge);
+                slotText.onclick = () => subscribeToAssessment(id, challenge, begin);
                 slotsElem.appendChild(slotText);
             }
         }
     }
 }
 
-function subscribeToAssessment(md5, challenge) {
+function subscribeToAssessment(md5, challenge, begin) {
     assessorLoadingGif.style.display = "inline-block";
     let request = requestSend('PUT', `https://lms.ucode.world/api/v0/frontend/slots/${md5}/subscribe-to-assessment/`, 'json', `{"challenge":"${challenge}"}`);
     request.onload = function () {
@@ -172,19 +178,27 @@ function subscribeToAssessment(md5, challenge) {
                 document.getElementsByClassName("assessor-block")[0].style.display = "none";
                 document.getElementById("assessor-header").innerHTML = "Assessment canceled! 😎";
             };
-            tryAgainBtn.onclick = () => cancelAssessment(id, subscribeToAssessment, md5, challenge);
+            tryAgainBtn.onclick = () => cancelAssessment(id, begin, challenge);
         }
     }
 }
 
-function cancelAssessment(id, func=null, ...args) {
+function cancelAssessment(id, begin=null, challenge=null) {
     let request = requestSend('PUT', `https://lms.ucode.world/api/v0/frontend/slots/${id}/cancel-assessment/`);
     request.onload = function () {
-        let res = request.response;
-        let user = res['user'];
-        let id = res['id'];
-        if (func)
-            func(...args);
-        return [user, id];  // not used
+        if (begin) {
+            alert("The function is unstable, it's being actively developed now, expect an update soon");
+            return;
+            let seconds = 5;
+            let int = setInterval(() => {
+                document.getElementById("assessor-header").innerHTML = "Please wait: " + seconds-- + " s.";
+                if (seconds <= 0) {
+                    document.getElementById("assessor-header").innerHTML = "You will assessed by:";
+                    clearInterval(int);
+                    let md5 = requestSlotsChallenge(challenge, begin);
+                    subscribeToAssessment(md5, challenge, begin);
+                }
+            }, 1000);
+        }
     }
 }

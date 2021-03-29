@@ -106,84 +106,105 @@ function secondsToDays(seconds) {
     return `${d} days ${h}:${m}:${s}`;
 }
 
+function getStyleCode() {
+    let styles = document.getElementsByTagName('style');
+    for (let i = 0; i < styles.length; i++) {
+        let sRegex = styles[i].innerHTML.match(/_ngcontent-\w{3}-c242/);
+        if (sRegex)
+            return sRegex[0];
+    }
+    return '';
+}
+
 function requestSelf() {
     let request = requestSend('GET', "https://lms.ucode.world/api/v0/frontend/user/self/");
     request.onload = function () {
         let res = request.response;
 
+        let styleCode = getStyleCode();
+
         // Status element
-        let mdc_chip = document.createElement('mdc-chip');
-        mdc_chip.id = "elemToCheckCreation";
-        mdc_chip.className = "lives-token mdc-chip ng-star-inserted mdc-ripple-upgraded";
-        mdc_chip.style.margin = "7px auto";
-        mdc_chip.style.maxWidth = "260px";
-        mdc_chip.style.height = "auto";
-        mdc_chip.style.minHeight = "32px";
-        let mdc_icon = document.createElement("mdc-icon");
-        mdc_icon.className = "mdc-chip__icon ngx-mdc-icon material-icons mdc-chip__icon--leading";
-        mdc_icon.innerText = "info";
-        let textStatus = document.createElement('mdc-chip-text');
-        textStatus.className = "mdc-chip__text";
+        let mat_chip = document.createElement('mat-chip');
+        mat_chip.id = "elemToCheckCreation";
+        mat_chip.className = "mat-chip mat-focus-indicator cursor-pointer mat-primary mat-standard-chip ng-star-inserted";
+        mat_chip.setAttribute(styleCode, '');
+        mat_chip.style.margin = "7px auto";
+        mat_chip.style.maxWidth = "260px";
+        mat_chip.style.height = "auto";
+        mat_chip.style.minHeight = "32px";
+        let mat_icon = document.createElement("mat-icon");
+        mat_icon.setAttribute(styleCode, '');
+        mat_icon.className = "mat-icon notranslate material-icons mat-icon-no-color";
+        mat_icon.innerText = "info";
+        let textStatus = document.createElement('span');
+        textStatus.setAttribute(styleCode, '');
         if (res['socials'])
             textStatus.innerHTML = makeStatus(res['socials']['status']);
-        mdc_chip.appendChild(mdc_icon);
-        mdc_chip.appendChild(textStatus);
+        mat_chip.appendChild(mat_icon);
+        mat_chip.appendChild(textStatus);
 
         // Feedback comments element
         let feedback_block = document.createElement('div');
         feedback_block.className = "content-block";
-        let fb_mdc_card = document.createElement('mdc-card');
-        fb_mdc_card.className = "rounded-card mdc-card mdc-card--outlined ng-star-inserted";
-        fb_mdc_card.style.padding = "12px 0 12px 24px";
-        fb_mdc_card.style.cursor = "pointer";
-        fb_mdc_card.innerHTML = "Show all feedback comments";
-        let fb_mdc_list = document.createElement('mdc-list');
-        fb_mdc_list.className = "mdc-list mdc-list--avatar-list ng-star-inserted";
-        fb_mdc_list.style.marginLeft = "-24px";
-        fb_mdc_list.style.whiteSpace = "pre";
-        feedback_block.appendChild(fb_mdc_card);
+        feedback_block.setAttribute(styleCode, '');
+        let fb_mat_card = document.createElement('mat-card');
+        fb_mat_card.className = "mat-card rounded-card";
+        fb_mat_card.style.padding = "12px 0 12px 24px";
+        fb_mat_card.style.cursor = "pointer";
+        fb_mat_card.innerHTML = "Show all feedback comments";
+        let fb_mat_list = document.createElement('mat-list');
+        fb_mat_list.setAttribute(styleCode, '');
+        fb_mat_list.className = "mat-list mat-list-base ng-star-inserted";
+        fb_mat_list.style.marginLeft = "-24px";
+        fb_mat_list.style.whiteSpace = "pre";
+        feedback_block.appendChild(fb_mat_card);
 
         // More information
         function moreInfoElement(icon, primaryText, secondaryText, smallText) {
-            let spent_time_block = document.createElement('mdc-list-item');
-            spent_time_block.className = "mdc-list-item mdc-ripple-upgraded";
-            let st_mdc_icon = document.createElement('mdc-icon');
-            st_mdc_icon.className = "ngx-mdc-icon mdc-list-item__graphic material-icons";
-            st_mdc_icon.innerText = icon;
-            let st_mdc_list_item_text = document.createElement('mdc-list-item-text');
-            st_mdc_list_item_text.className = "mdc-list-item__text";
-            let st_primary_text = document.createElement('span');
-            st_primary_text.className = "mdc-list-item__primary-text";
-            st_primary_text.innerText = primaryText;
+            let spent_time_block = document.createElement('mat-list-item');
+            spent_time_block.setAttribute(styleCode, '');
+            spent_time_block.className = "mat-list-item mat-focus-indicator";
+            let st_div = document.createElement('div');
+            st_div.className = "mat-list-item-content";
+            let st_mat_icon = document.createElement('mat-icon');
+            st_mat_icon.setAttribute(styleCode, '');
+            st_mat_icon.className = "mat-icon material-icons mat-icon-no-color";
+            st_mat_icon.innerText = icon;
+            let st_p = document.createElement('p');
+            st_p.setAttribute(styleCode, '');
+            st_p.innerText = primaryText;
             if (smallText)
-                st_primary_text.style.fontSize = "14px";
+                st_p.style.fontSize = "14px";
+            let st_br = document.createElement('br');
             let st_secondary_text = document.createElement('span');
-            st_secondary_text.className = "mdc-list-item__secondary-text ng-star-inserted";
+            st_secondary_text.setAttribute(styleCode, '');
             st_secondary_text.innerText = secondaryText;
-            spent_time_block.appendChild(st_mdc_icon);
-            spent_time_block.appendChild(st_mdc_list_item_text);
-            st_mdc_list_item_text.appendChild(st_primary_text);
-            st_mdc_list_item_text.appendChild(st_secondary_text);
+            spent_time_block.appendChild(st_div);
+            st_div.appendChild(st_mat_icon);
+            st_div.appendChild(st_p);
+            st_p.appendChild(st_br);
+            st_p.appendChild(st_secondary_text);
             return spent_time_block;
         }
 
         function waitUntilPageLoads() {
-            let elem = document.getElementsByClassName("mdc-chip-set")[0];
-            if (!elem) {
+            let elem = document.getElementsByClassName("mat-chip-list-wrapper")[0];
+            let leftMenu = document.getElementsByClassName("mat-card mat-focus-indicator rounded-card profile-information")[0];
+            let fb_elem = document.getElementsByClassName("content")[0];
+            let moreInfoElem = document.getElementsByClassName("mat-list mat-list-base")[0];
+            if (!elem || !leftMenu || !fb_elem || !moreInfoElem) {
                 setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
                 return;
             }
-            if (document.getElementById(mdc_chip.id))
+            if (document.getElementById(mat_chip.id))
                 return;
             // Left-side menu
-            let leftMenu = document.getElementsByClassName("rounded-card profile-information mdc-card mdc-card--outlined")[0];
             leftMenu.style.minWidth = "280px";
 
             // Status
-            elem.appendChild(mdc_chip);
+            elem.appendChild(mat_chip);
 
             // Feedback
-            let fb_elem = document.getElementsByClassName("content")[0];
             fb_elem.appendChild(feedback_block);
             let open = false;
             feedback_block.onclick = () => {
@@ -191,21 +212,27 @@ function requestSelf() {
                     return;
                 open = true;
 
-                fb_mdc_card.appendChild(fb_mdc_list);
+                fb_mat_card.appendChild(fb_mat_list);
                 let arr = [];
                 let i = 0, max = 0;
                 function reqCycle() {
-                    if (i >= 20) {
+                    if (i >= 10) {
                         fillOnPage();
                         return;
                     }
                     let request = requestSend('GET', "https://lms.ucode.world/api/v0/frontend/user/assessor-comments/");
                     request.onload = function () {
                         let fb_res = request.response;
+                        if (request.status === 429) {
+                            let timeLeft = fb_res['detail'].match(/\d+/);
+                            fb_mat_list.innerHTML = "<code>    Please wait: " + timeLeft + " s.</code>";
+                            setTimeout(reqCycle, 1000);
+                            return;
+                        }
                         i++;
                         if (i > max)
                             max = i;
-                        fb_mdc_list.innerHTML = "<code>    Loading: " + max * 10 / 2 + "%</code>";
+                        fb_mat_list.innerHTML = "<code>    Loading: " + max * 10 + "%</code>";
                         fb_res.forEach(value => {
                             let existsIn = false;
                             arr.forEach(arrValue => {
@@ -223,37 +250,42 @@ function requestSelf() {
                 reqCycle();
                 function fillOnPage() {
                     arr.forEach(value => {
-                        let fb_mdc_list_item = document.createElement('mdc-list-item');
-                        fb_mdc_list_item.className = "height-a mdc-list-item ng-star-inserted mdc-ripple-upgraded";
-                        let fb_mdc_list_divider = document.createElement('mdc-list-divider');
-                        fb_mdc_list_divider.className = "mdc-list-divider";
-                        let fb_mdc_icon = document.createElement('mdc-icon');
-                        fb_mdc_icon.className = "ngx-mdc-icon mdc-list-item__graphic material-icons";
-                        fb_mdc_icon.innerHTML = "person_outline";
-                        let fb_text = document.createElement('span');
-                        fb_text.innerText = value;
-                        fb_mdc_list.appendChild(fb_mdc_list_divider);
-                        fb_mdc_list.appendChild(fb_mdc_list_item);
-                        fb_mdc_list_item.appendChild(fb_mdc_icon);
-                        fb_mdc_list_item.appendChild(fb_text);
+                        let fb_mat_list_item = document.createElement('mat-list-item');
+                        fb_mat_list_item.className = "mat-list-item mat-focus-indicator height-a ng-star-inserted";
+                        fb_mat_list_item.setAttribute(styleCode, '');
+                        let fb_mat_div = document.createElement('div');
+                        fb_mat_div.className = "mat-list-item-content";
+                        let fb_mat_divider = document.createElement('mat-divider');
+                        fb_mat_divider.className = "mat-divider mat-divider-horizontal";
+                        fb_mat_divider.setAttribute(styleCode, '');
+                        let fb_mat_icon = document.createElement('mat-icon');
+                        fb_mat_icon.className = "mat-icon notranslate material-icons mat-icon-no-color";
+                        fb_mat_icon.setAttribute(styleCode, '');
+                        fb_mat_icon.innerHTML = "person_outline";
+                        let fb_span = document.createElement('span');
+                        fb_span.innerText = value;
+                        fb_mat_list.appendChild(fb_mat_divider);
+                        fb_mat_list.appendChild(fb_mat_list_item);
+                        fb_mat_list_item.appendChild(fb_mat_div);
+                        fb_mat_div.appendChild(fb_mat_icon);
+                        fb_mat_div.appendChild(fb_span);
                     });
                 }
             }
 
             // More info
-            let moreInfoElem = document.getElementsByClassName("mdc-list mdc-list--avatar-list mdc-list--two-line")[0];
-            let mi_mdc_list_divider = document.createElement('mdc-list-divider');
-            mi_mdc_list_divider.className = "mdc-list-divider";
-            moreInfoElem.appendChild(mi_mdc_list_divider);
+            let mi_mat_divider = document.createElement('mat-divider');
+            mi_mat_divider.className = "mat-divider mat-divider-horizontal";
+            moreInfoElem.appendChild(mi_mat_divider);
             if (res['adventure_users'])
                 moreInfoElem.appendChild(moreInfoElement("catching_pokemon", res['adventure_users'][res['adventure_users'].length - 1]['adventure_name'], 'Adventure', true));
-            mi_mdc_list_divider = document.createElement('mdc-list-divider');
-            mi_mdc_list_divider.className = "mdc-list-divider";
-            moreInfoElem.appendChild(mi_mdc_list_divider);
+            mi_mat_divider = document.createElement('mat-divider');
+            mi_mat_divider.className = "mat-divider mat-divider-horizontal";
+            moreInfoElem.appendChild(mi_mat_divider);
             moreInfoElem.appendChild(moreInfoElement("timer", secondsToDays(res['spent_time']), 'Spent time'));
-            mi_mdc_list_divider = document.createElement('mdc-list-divider');
-            mi_mdc_list_divider.className = "mdc-list-divider";
-            moreInfoElem.appendChild(mi_mdc_list_divider);
+            mi_mat_divider = document.createElement('mat-divider');
+            mi_mat_divider.className = "mat-divider mat-divider-horizontal";
+            moreInfoElem.appendChild(mi_mat_divider);
             moreInfoElem.appendChild(moreInfoElement("label", res['id'], 'User ID'));
         }
         waitUntilPageLoads();
@@ -262,64 +294,105 @@ function requestSelf() {
 
 function requestSettings() {
     let request = requestSend('GET', "https://lms.ucode.world/api/v0/frontend/user/self/");
+    // noinspection DuplicatedCode
     request.onload = function () {
         let res = request.response;
 
         let selfId = res['id'];
         let selfStatus = res['socials']['status'] ? res['socials']['status'] : '';
+        let styleCode = getStyleCode();
+        let styleCode2 = styleCode.slice(0, -1) + '3';
 
-        let mdc_form_field = document.createElement("mdc-form-field");
-        mdc_form_field.id = "elemToCheckCreation";
-        mdc_form_field.className = "ngx-form-field-text-field";
-        mdc_form_field.style.display = "block";
-        mdc_form_field.style.marginBottom = "10px";
-        let mdc_text_field = document.createElement("mdc-text-field");
-        mdc_text_field.className = "mdc-text-field ng-untouched ng-pristine ng-valid mdc-text-field--outlined mdc-text-field--with-leading-icon";
-        mdc_text_field.style.width = "100%";
+        let mat_form_field = document.createElement("mat-form-field");
+        mat_form_field.id = "elemToCheckCreation";
+        mat_form_field.className = "mat-form-field ng-tns-c72-8 mat-form-field-appearance-outline mat-form-field-can-float mat-form-field-should-float mat-form-field-has-label";
+        mat_form_field.setAttribute(styleCode, '');
+        mat_form_field.setAttribute(styleCode2, '');
+        mat_form_field.style.width = "100%";
+        let mat_form_field_wrapper = document.createElement('div');
+        mat_form_field_wrapper.className = "mat-form-field-wrapper ng-tns-c72-8";
+        let mat_form_field_flex = document.createElement('div');
+        mat_form_field_flex.className = "mat-form-field-flex ng-tns-c72-8";
+        let mat_form_field_outline = document.createElement('div');
+        mat_form_field_outline.className = "mat-form-field-outline ng-tns-c72-8";
+        let mat_form_field_outline_start = document.createElement('div');
+        mat_form_field_outline_start.className = "mat-form-field-outline-start ng-tns-c72-8";
+        mat_form_field_outline_start.style.width = "41px";
+        let mat_form_field_outline_gap = document.createElement('div');
+        mat_form_field_outline_gap.className = "mat-form-field-outline-gap ng-tns-c72-8";
+        mat_form_field_outline_gap.style.width = "43px";
+        let mat_form_field_outline_end = document.createElement('div');
+        mat_form_field_outline_end.className = "mat-form-field-outline-end ng-tns-c72-8";
+        let mat_form_field_outline_thick = document.createElement('div');
+        mat_form_field_outline_thick.className = "mat-form-field-outline mat-form-field-outline-thick ng-tns-c72-8";
+        let mat_form_field_outline_start2 = document.createElement('div');
+        mat_form_field_outline_start2.className = "mat-form-field-outline-start ng-tns-c72-8";
+        mat_form_field_outline_start2.style.width = "41px";
+        let mat_form_field_outline_gap2 = document.createElement('div');
+        mat_form_field_outline_gap2.className = "mat-form-field-outline-gap ng-tns-c72-8";
+        mat_form_field_outline_gap2.style.width = "43px";
+        let mat_form_field_outline_end2 = document.createElement('div');
+        mat_form_field_outline_end2.className = "mat-form-field-outline-end ng-tns-c72-8";
+
+        let mat_form_field_prefix = document.createElement('div');
+        mat_form_field_prefix.className = "mat-form-field-prefix ng-tns-c72-8";
+        let mat_icon = document.createElement("mat-icon");
+        mat_icon.className = "mat-icon material-icons mat-icon-no-color ng-tns-c72-8";
+        mat_icon.setAttribute(styleCode, '');
+        mat_icon.setAttribute(styleCode2, '');
+        mat_icon.innerHTML = "info";
+
+        let mat_form_field_infix = document.createElement('div');
+        mat_form_field_infix.className = "mat-form-field-infix ng-tns-c72-8";
         let input = document.createElement("input");
-        input.className = "mdc-text-field__input";
+        input.className = "mat-input-element mat-form-field-autofill-control ng-tns-c72-8 cdk-text-field-autofill-monitored";
+        input.setAttribute(styleCode, '');
+        input.setAttribute(styleCode2, '');
         input.id = "statusInput";
         input.type = "text";
         input.maxLength = "100";
         input.value = selfStatus;
-        let mdc_icon = document.createElement("mdc-icon");
-        mdc_icon.className = "mdc-text-field__icon ngx-mdc-icon material-icons";
-        mdc_icon.innerHTML = "info";
-        let mdc_notched_outline = document.createElement("mdc-notched-outline");
-        mdc_notched_outline.className = "mdc-notched-outline mdc-notched-outline--upgraded ng-star-inserted mdc-notched-outline--notched";
-        let mdc_notched_outline__leading = document.createElement("div");
-        mdc_notched_outline__leading.className = "mdc-notched-outline__leading";
-        let mdc_notched_outline__notch = document.createElement("div");
-        mdc_notched_outline__notch.className = "mdc-notched-outline__notch";
-        mdc_notched_outline__notch.style.width = "43px";
-        let label = document.createElement("label");
-        label.className = "mdc-floating-label mdc-floating-label--float-above";
-        label.htmlFor = "statusInput";
-        label.innerHTML = "Status";
-        let mdc_notched_outline__trailing = document.createElement("div");
-        mdc_notched_outline__trailing.className = "mdc-notched-outline__trailing";
+        let mat_form_field_label_wrapper = document.createElement('span');
+        mat_form_field_label_wrapper.className = "mat-form-field-label-wrapper ng-tns-c72-8";
+        let mat_form_field_label = document.createElement('label');
+        mat_form_field_label.className = "mat-form-field-label ng-tns-c72-8";
+        let mat_label = document.createElement('mat-label');
+        mat_label.className = "ng-tns-c72-8";
+        mat_label.setAttribute(styleCode, '');
+        mat_label.setAttribute(styleCode2, '');
+        mat_label.innerHTML = "Status";
 
-        mdc_form_field.appendChild(mdc_text_field);
-        mdc_text_field.appendChild(input);
-        mdc_text_field.appendChild(mdc_icon);
-        mdc_text_field.appendChild(mdc_notched_outline);
-        mdc_notched_outline.appendChild(mdc_notched_outline__leading);
-        mdc_notched_outline.appendChild(mdc_notched_outline__notch);
-        mdc_notched_outline__notch.appendChild(label);
-        mdc_notched_outline.appendChild(mdc_notched_outline__trailing);
+        mat_form_field.appendChild(mat_form_field_wrapper);
+        mat_form_field_wrapper.appendChild(mat_form_field_flex);
+        mat_form_field_flex.appendChild(mat_form_field_outline);
+        mat_form_field_outline.appendChild(mat_form_field_outline_start);
+        mat_form_field_outline.appendChild(mat_form_field_outline_gap);
+        mat_form_field_outline.appendChild(mat_form_field_outline_end);
+        mat_form_field_flex.appendChild(mat_form_field_outline_thick);
+        mat_form_field_outline_thick.appendChild(mat_form_field_outline_start2);
+        mat_form_field_outline_thick.appendChild(mat_form_field_outline_gap2);
+        mat_form_field_outline_thick.appendChild(mat_form_field_outline_end2);
+        mat_form_field_flex.appendChild(mat_form_field_prefix);
+        mat_form_field_prefix.appendChild(mat_icon);
+        mat_form_field_flex.appendChild(mat_form_field_infix);
+        mat_form_field_infix.appendChild(input);
+        mat_form_field_infix.appendChild(mat_form_field_label_wrapper);
+        mat_form_field_label_wrapper.appendChild(mat_form_field_label);
+        mat_form_field_label.appendChild(mat_label);
 
         function waitUntilPageLoads() {
-            let elem = document.getElementsByClassName("ng-pristine ng-valid")[7];
+            let elem = document.getElementsByClassName("ng-untouched ng-pristine ng-valid")[8];
             if (!elem) {
                 setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
                 return;
             }
             if (document.getElementById("elemToCheckCreation"))
                 return;
-            elem.appendChild(mdc_form_field);
-            let button = document.getElementsByClassName("mdc-button ngx-mdc-button--primary mdc-ripple-upgraded")[0];
+            elem.appendChild(mat_form_field);
+            let button = document.getElementsByClassName("primary mat-flat-button mat-button-base")[0];
+            button.className = button.className.replace("mat-button-disabled", '');
             button.removeAttribute("disabled");
-            button.onfocus = () => {
+            button.onclick = () => {
                 let selfStatus = document.getElementById(input.id).value.replaceAll('"', '\\"');
                 let payload = `{"socials":{"status":"${selfStatus}"}}`;
                 setTimeout(requestSend, 1000, 'PATCH', `https://lms.ucode.world/api/v0/frontend/users/${selfId}/`, 'json', payload);
@@ -356,31 +429,38 @@ function requestUsers(id) {
     let request = requestSend('GET', `https://lms.ucode.world/api/v0/frontend/users/${id}/`);
     request.onload = function () {
         let res = request.response;
+        let styleCode = getStyleCode();
 
-        let mdc_chip = document.createElement('mdc-chip');
-        mdc_chip.id = "elemToCheckCreation";
-        mdc_chip.className = "lives-token mdc-chip ng-star-inserted mdc-ripple-upgraded";
-        mdc_chip.style.margin = "7px auto";
-        mdc_chip.style.maxWidth = "180px";
-        let mdc_icon = document.createElement("mdc-icon");
-        mdc_icon.className = "mdc-chip__icon ngx-mdc-icon material-icons mdc-chip__icon--leading";
-        mdc_icon.innerText = "info";
-        let textStatus = document.createElement('mdc-chip-text');
-        textStatus.className = "mdc-chip__text";
+        // Status element
+        let mat_chip = document.createElement('mat-chip');
+        mat_chip.id = "elemToCheckCreation";
+        mat_chip.className = "mat-chip mat-focus-indicator cursor-pointer mat-primary mat-standard-chip ng-star-inserted";
+        mat_chip.setAttribute(styleCode, '');
+        mat_chip.style.margin = "7px auto";
+        mat_chip.style.maxWidth = "260px";
+        mat_chip.style.height = "auto";
+        mat_chip.style.minHeight = "32px";
+        let mat_icon = document.createElement("mat-icon");
+        mat_icon.setAttribute(styleCode, '');
+        mat_icon.className = "mat-icon notranslate material-icons mat-icon-no-color";
+        mat_icon.innerText = "info";
+        let textStatus = document.createElement('span');
+        textStatus.setAttribute(styleCode, '');
         if (res['socials'])
             textStatus.innerHTML = makeStatus(res['socials']['status']);
-        mdc_chip.appendChild(mdc_icon);
-        mdc_chip.appendChild(textStatus);
+        mat_chip.appendChild(mat_icon);
+        mat_chip.appendChild(textStatus);
+
         function waitUntilPageLoads() {
-            let elem = document.getElementsByClassName("mdc-chip-set")[0];
+            let elem = document.getElementsByClassName("mat-chip-list-wrapper")[0];
             if (!elem) {
                 setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
                 return;
             }
-            let prevElem = document.getElementById(mdc_chip.id);
+            let prevElem = document.getElementById(mat_chip.id);
             if (prevElem)
                 prevElem.parentNode.removeChild(prevElem);
-            elem.appendChild(mdc_chip);
+            elem.appendChild(mat_chip);
         }
         waitUntilPageLoads();
     }
