@@ -59,15 +59,21 @@ function requestSend(method, url, responseType='json', payload=null) {
 
 function makeStatus(statusStr) {
     let emojis = {
+        ':anaconda:':'https://emoji.slack-edge.com/T01A4EB6ES0/anaconda/740f67790b10a5c8.png',
+        ':androidstudio:':'https://emoji.slack-edge.com/T01A4EB6ES0/androidstudio/b25cfe7a66e422ee.png',
         ':attentionsign:':'https://emoji.slack-edge.com/T01A4EB6ES0/attentionsign/d090299a330ae690.gif',
+        ':coins:':'https://emoji.slack-edge.com/T01A4EB6ES0/coins/5e57e18df65477f9.png',
         ':flykisses:':'https://emoji.slack-edge.com/T01A4EB6ES0/flykisses/5850fb1752432449.gif',
         ':homer:':'https://emoji.slack-edge.com/T01A4EB6ES0/homer/58ba2251c6375891.gif',
+        ':intel:':'https://emoji.slack-edge.com/T01A4EB6ES0/intel/4133b8a77cc98935.png',
+        ':intellij-idea:':'https://emoji.slack-edge.com/T01A4EB6ES0/intellij-idea/e7c30ea5f83473ce.png',
         ':khpi:':'https://emoji.slack-edge.com/T01A4EB6ES0/khpi/68658d9aa4072b3c.png',
         ':otp:':'https://emoji.slack-edge.com/T01A4EB6ES0/otp/946307d5eb00550b.png',
-        ':pepedance:':'https://i.pinimg.com/originals/5d/ee/91/5dee91700de2b898f61260bea7322a5c.gif',
         ':piitu:':'https://emoji.slack-edge.com/T01A4EB6ES0/piitu/114b1c0c94392793.jpg',
+        ':phpstorm:':'https://emoji.slack-edge.com/T01A4EB6ES0/phpstorm/cbe23ca963ce722c.png',
         ':pikadance:':'https://emoji.slack-edge.com/T01A4EB6ES0/pikadance/018cf25073f7f55e.gif',
         ':pride:':'https://emoji.slack-edge.com/T01A4EB6ES0/pride/56b1bd3388.png',
+        ':python3:':'https://emoji.slack-edge.com/T01A4EB6ES0/python3/425acfc82ffaf8a8.png',
         ':rainbowcat:':'https://emoji.slack-edge.com/T01A4EB6ES0/rainbowcat/fdaba9b7dd08accb.gif',
         ':shipit:':'https://emoji.slack-edge.com/T01A4EB6ES0/squirrel/465f40c0e0.png',
         ':slack:':'https://emoji.slack-edge.com/T01A4EB6ES0/slack/7d462d2443.png',
@@ -77,6 +83,7 @@ function makeStatus(statusStr) {
         ':ucode_connect_full:':'https://emoji.slack-edge.com/T01A4EB6ES0/ucode_connect_full/949a9ac9d540828a.png',
         ':ukraine_emblem:':'https://emoji.slack-edge.com/T01A4EB6ES0/ukraine_emblem/9a54300069fbf7fd.png',
         ':unicorn:':'https://emoji.slack-edge.com/T01A4EB6ES0/unicorn/ded843537aef0b2a.gif',
+        ':webstorm:':'https://emoji.slack-edge.com/T01A4EB6ES0/webstorm/2db07d87faccf03f.png',
         ':wow:':'https://emoji.slack-edge.com/T01A4EB6ES0/wow/50afad8ae00e499f.gif',
         ':youtube:':'https://emoji.slack-edge.com/T01A4EB6ES0/youtube/f4d8568e5d66ceab.jpg'};
     function wrap(imgUrl) {
