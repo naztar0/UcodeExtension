@@ -1,5 +1,6 @@
 let token = null;
 let url = null;
+let darkMode = false;
 
 let downloadPdfMenu = document.getElementById('download-pdf').parentNode;
 let slotsMenu = document.getElementById('menuSlots').parentNode;
@@ -10,8 +11,13 @@ let statusText = document.getElementById('statusDetail');
 let header = document.getElementById('header');
 resetPopup();
 
-chrome.storage.sync.get(['token', 'url'], function (result) {
+chrome.storage.sync.get(['token', 'url', 'dark_mode'], function (result) {
     token = result.token;
+    if (result.dark_mode !== undefined) {
+        darkMode = result.dark_mode;
+        if (darkMode)
+            document.getElementById("popupContent").className = "dark";
+    }
     try {
         url = new URL(result.url);
     } catch (TypeError) {

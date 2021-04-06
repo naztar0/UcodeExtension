@@ -700,7 +700,7 @@ function requestSettings() {
         let dm_hr = document.createElement('hr');
         let dm_title = document.createElement('p');
         dm_title.style.textAlign = "center";
-        dm_title.innerHTML = "Dark Mode Settings";
+        dm_title.innerHTML = "Theme Settings";
         let dm_div = document.createElement('div');
         dm_div.style.textAlign = "center";
         let checkboxClassNames = ["mat-checkbox mat-accent", "mat-checkbox mat-accent mat-checkbox-checked"];
