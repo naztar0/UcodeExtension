@@ -1,27 +1,19 @@
 chrome.webRequest.onSendHeaders.addListener(
-    function(details) {
-        if (details.url === "https://lms.ucode.world/api/v0/frontend/user/self/") {
-            let headers = details.requestHeaders;
+    function (result) {
+        let headers = result.requestHeaders;
+        for (let i = 0; i < headers.length; i++)
+            if (headers[i].name === "ext")
+                return;
+        if (result.url === "https://lms.ucode.world/api/v0/frontend/user/self/") {
             for (let i = 0; i < headers.length; i++) {
                 if (headers[i].name === "authorization") {
                     let token = headers[i].value;
-                    let refresh = true;
-                    chrome.storage.sync.get(['token'], function(result) {
-                        if (result.token === token)
-                            refresh = false;
-                    });
-                    if (!refresh)
-                        break;
                     chrome.storage.sync.set({token: token}, () => {});
-                    break;
                 }
             }
         }
-        else if (details.url.slice(0, 57) === "https://lms.ucode.world/api/v0/frontend/statistics/users/") {
-            chrome.storage.sync.get(['statistics_url'], function(result) {
-                if (result.statistics_url !== details.url)
-                    chrome.storage.sync.set({statistics_url: details.url}, () => {});
-            });
+        else if (result.url.slice(0, 57) === "https://lms.ucode.world/api/v0/frontend/statistics/users/") {
+            chrome.storage.sync.set({statistics_url: result.url}, () => {});
         }
     },
     {urls: ["https://lms.ucode.world/*"]}, ['requestHeaders']

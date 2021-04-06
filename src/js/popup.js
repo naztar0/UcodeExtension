@@ -149,8 +149,8 @@ function requestSlotsChallenge(challenge, mBegin=null) {
             statusText.innerHTML = "Such slot is no longer available 😥";
             slotsMenu.style.display = "none";
             assessorMenu.style.display = "none";
+            slotsLoadingGif.style.display = "none";
             header.className = "error";
-            return;
         }
     }
 }
@@ -159,6 +159,12 @@ function subscribeToAssessment(md5, challenge, begin) {
     assessorLoadingGif.style.display = "inline-block";
     let request = requestSend('PUT', `https://lms.ucode.world/api/v0/frontend/slots/${md5}/subscribe-to-assessment/`, 'json', `{"challenge":"${challenge}"}`);
     request.onload = function () {
+        if (request.status === 400) {
+            document.getElementById("assessor-header").innerHTML = `Team already has assessment at ${begin}.<br>Trying again...`;
+            requestSlotsChallenge(challenge, begin);
+            return;
+        }
+        document.getElementById("assessor-header").innerHTML = "You will assessed by:";
         let res = request.response;
         let user = res['user'];
         let id = res['id'];
