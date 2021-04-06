@@ -26,7 +26,7 @@ chrome.storage.sync.get(['token', 'url', 'dark_mode'], function (result) {
     urlHandler();
 });
 
-chrome.storage.onChanged.addListener((changes, namespace) => {
+chrome.storage.onChanged.addListener((changes) => {
     downloadPdfMenu.style.display = "none";
     slotsMenu.style.display = "none";
     statusText.innerHTML = "Nothing to do";
