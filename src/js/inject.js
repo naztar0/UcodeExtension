@@ -58,11 +58,17 @@ function urlHandler() {
     else if (path[1] === 'available-media') {
         setDarkMode('available_media', 'mat-card');
     }
-    else if (path[1] === 'slots') {
+    else if (path[1] === 'slots' || path[2] === 'slots') {
         setDarkMode('slots', 'mat-card');
     }
     else if (path[1] === 'cluster') {
         setDarkMode('cluster');
+    }
+    else if (path[1] === 'challenges') {
+        setDarkMode('challenges');
+    }
+    else if (path[1] === 'challenge') {
+        setDarkMode('challenge');
     }
     else if (path[1] === 'pdf') {
         setDarkMode('pdf');
@@ -72,6 +78,12 @@ function urlHandler() {
     }
     else if (path[1] === 'activity') {
         setDarkMode('activity');
+    }
+    else if (path[1] === 'assessments') {
+        setDarkMode('assessments');
+    }
+    else {
+        setDarkMode();
     }
 }
 
@@ -173,7 +185,7 @@ function getStyleCode(className, index=0) {
     return '_';
 }
 
-function setDarkMode(page, styleCodeClassName=null, index=0) {
+function setDarkMode(page=null, styleCodeClassName=null, index=0) {
     if (!darkMode)
         return;
     let styleCode = null;
@@ -184,18 +196,45 @@ function setDarkMode(page, styleCodeClassName=null, index=0) {
             return;
         }
     }
-    let stylesSelf = `
+    let stylesMain = `
         body {
             background-color: #202225;
             background-image: none;
         }
-        .mat-card, .mat-expansion-panel, .mat-card[${styleCode}] h3[${styleCode}] {
+        .mat-card, .mat-expansion-panel, .mat-card h3 {
             color: #B9BBBE !important;
             background-color: #2F3136;
         }
-        .challenges-header-title[${styleCode}], .mat-expansion-panel-header-title, .mat-list-base .mat-list-item, 
-        .mat-list-base .mat-list-option {
+        .mat-chip.mat-standard-chip {
+            background-color: #393C43 !important;
             color: #B9BBBE !important;
+        }
+        .challenges-header-title, .mat-expansion-panel-header-title, .mat-list-base .mat-list-item, 
+        .mat-list-base .mat-list-option, .mat-select-value, .mat-select-arrow, .mat-form-field-label,
+        .mat-input-element::placeholder {
+            color: #B9BBBE !important;
+        }
+        .mat-form-field-appearance-outline .mat-form-field-outline {
+            color: rgb(255 255 255 / 12%);
+        }
+        .mat-list-item:hover, tr.mat-row:hover {
+            background: #292B2F !important;
+        }
+        .mat-progress-bar.mat-accent .mat-progress-bar-buffer,
+        .mat-progress-bar.mat-accent .mat-progress-bar-background {
+            background-color: #90abec;
+        }
+        .mat-progress-bar.mat-accent .mat-progress-bar-fill:after {
+            background-color: #5d78bb;
+        }
+        .mat-icon {
+            background: none !important;
+        }
+    `;
+    let stylesSelf = `
+        .mat-card[${styleCode}] h3[${styleCode}] {
+            color: #B9BBBE !important;
+            background-color: #2F3136;
         }
         .month-name text, .weekday text {
             fill: #70747B !important;
@@ -206,10 +245,6 @@ function setDarkMode(page, styleCodeClassName=null, index=0) {
         .profile[${styleCode}] .profile-information[${styleCode}] .mat-chip-list[${styleCode}] .mat-chip[${styleCode}] .mat-icon[${styleCode}] {
             color: #9e9e9e;
         }
-        .mat-chip.mat-standard-chip {
-            background-color: #393C43 !important;
-            color: #B9BBBE !important;
-        }
         text.legend {
             fill: #b9bbbe;
         }
@@ -219,20 +254,29 @@ function setDarkMode(page, styleCodeClassName=null, index=0) {
         .mat-expansion-indicator:after {
             color: inherit;
         }
+        g.axis .line, .gridCircle {
+            stroke: #9e9e9e !important;
+        }
+        .radarStroke {
+            stroke: #5d78bb !important;
+        }
+        .radarArea {
+            fill: #5d78bb !important;
+        }
+        .radarCircle {
+            fill: #a18dff !important;
+        }
         /*.progress svg {
             stroke: #292b2f; // circle 1
             stroke: #bb5d5d; // circle 2
         }*/
     `;
-    let stylesChallenge = `
+    let stylesChallengeUsers = `
         .mat-form-field-appearance-outline .mat-form-field-outline {
             color: rgba(255,255,255,.12);
         }
-        h4[${styleCode}], .mat-form-field-label, .mat-hint, .mat-select-value, .mat-select-arrow {
+        h4[${styleCode}], .mat-hint {
             color: #B9BBBE !important;
-        }
-        .repository-link-wrapper[${styleCode}] .repository-link-wrapper__item[${styleCode}] .mat-form-field-infix .mat-icon {
-            background: none;
         }
         .msg[${styleCode}], .attempt-summary .users .user {
             background:#393C43 !important;
@@ -249,13 +293,16 @@ function setDarkMode(page, styleCodeClassName=null, index=0) {
         mat-paginator {
             border: none !important;
         }
-        .header-title[${styleCode}], .list[${styleCode}] .list-items-block-title[${styleCode}] {
+        .header-title[${styleCode}], .list[${styleCode}] .list-items-block-title[${styleCode}], .mat-list-base .mat-list-item {
             color: #B9BBBE;
+        }
+        .icon {
+            background: #5d78bb !important;
         }
     `;
     let stylesSlots = `
-        .slots-card[${styleCode}] full-calendar .fc-day {
-            background-color: #2f3136;
+        .slots-card[${styleCode}] full-calendar .fc-day, .fc-timegrid-slot-lane, .fc-day {
+            background-color: #2f3136 !important;
         }
         .fc-theme-standard th, .fc-theme-standard td, .fc-theme-standard .fc-scrollgrid {
             border: 1px solid #7d7d7d !important;
@@ -268,14 +315,22 @@ function setDarkMode(page, styleCodeClassName=null, index=0) {
         }
     `;
     let stylesCluster = `
-        .mat-select-value, .mat-select-arrow, .mat-form-field-label, .mat-input-element::placeholder {
-            color: #B9BBBE !important;
-        }
-        .mat-form-field-appearance-outline .mat-form-field-outline {
-            color: rgb(255 255 255 / 12%);
-        }
         .cluster-wrapper span {
             background: #2f3136 !important;
+        }
+        .mat-bottom-sheet-container {
+            background:  #2f3136 !important;
+            color: #B9BBBE !important;
+        }
+    `;
+    let stylesChallenges = `
+        .demo-card-article__title a {
+            color: #B9BBBE !important;
+        }
+    `;
+    let stylesChallenge = `
+        .demo-card-article__title a, .mat-option {
+            color: #B9BBBE !important;
         }
     `;
     let stylesStatistics = `
@@ -292,23 +347,11 @@ function setDarkMode(page, styleCodeClassName=null, index=0) {
         mat-paginator {
             border: none !important;
         }
-        .mat-select-value, .mat-select-arrow, .mat-form-field-label, .mat-input-element::placeholder {
-            color: #B9BBBE !important;
-        }
-        .mat-form-field-appearance-outline .mat-form-field-outline {
-            color: rgb(255 255 255 / 12%);
-        }
     `;
     let stylesSettings = `
         .mat-tab-label, .mat-tab-link {
             color: #B9BBBE !important;
             opacity: 1 !important;
-        }
-        .mat-select-value, .mat-select-arrow, .mat-form-field-label, .mat-input-element::placeholder {
-            color: #B9BBBE !important;
-        }
-        .mat-form-field-appearance-outline .mat-form-field-outline {
-            color: rgb(255 255 255 / 12%);
         }
     `;
     let stylesPdf = `
@@ -330,9 +373,6 @@ function setDarkMode(page, styleCodeClassName=null, index=0) {
             color: #B9BBBE !important;
             background-color: #2F3136;
         }
-        .mat-form-field-appearance-legacy .mat-form-field-label {
-            color: #B9BBBE !important;
-        }
         .mat-chip.mat-standard-chip {
             background-color: #393C43 !important;
             color: #B9BBBE !important;
@@ -341,6 +381,27 @@ function setDarkMode(page, styleCodeClassName=null, index=0) {
     let stylesUsers = `
         .social-icons {
             filter: invert(1);
+        }
+        text.legend {
+            fill: #b9bbbe;
+        }
+        .day {
+            fill: #292B2F;
+        }
+        button.level {
+            background-color: #5d78bb !important;
+        }
+        g.axis .line, .gridCircle {
+            stroke: #9e9e9e !important;
+        }
+        .radarStroke {
+            stroke: #5d78bb !important;
+        }
+        .radarArea {
+            fill: #5d78bb !important;
+        }
+        .radarCircle {
+            fill: #a18dff !important;
         }
     `;
     let stylesActivity = `
@@ -353,26 +414,44 @@ function setDarkMode(page, styleCodeClassName=null, index=0) {
         .demo-list--custom mat-list-item mat-icon:after {
             border: 1px solid #5d78bb !important;
         }
-        .mat-select-value, .mat-select-arrow, .mat-form-field-label, .mat-input-element::placeholder {
+    `;
+    let stylesAssessments = `
+        .mat-input-element:disabled, .mat-hint {
+            color: rgba(255,255,255,.38);
+        }
+        .mat-button, .mat-icon-button, .mat-stroked-button, .mat-button-toggle-appearance-standard, .finish {
             color: #B9BBBE !important;
         }
-        .mat-form-field-appearance-outline .mat-form-field-outline {
-            color: rgb(255 255 255 / 12%);
+        .mat-button-toggle-appearance-standard {
+            background: #393C43 !important;
+        }
+        .mat-accent .mat-slider-thumb, .mat-accent .mat-slider-thumb-label, .mat-accent .mat-slider-track-fill {
+            background-color: #5d78bb !important;
+        }
+        .finish {
+            background-color: #5d78bb !important;
         }
     `;
 
 
+    let styleSheetMain = document.createElement("style");
+    styleSheetMain.innerText = stylesMain;
+    document.head.appendChild(styleSheetMain);
     let styleSheet = document.createElement("style");
     if (page === 'self')
         styleSheet.innerText = stylesSelf;
     else if (page === 'challenge_users')
-        styleSheet.innerText = stylesChallenge;
+        styleSheet.innerText = stylesChallengeUsers;
     else if (page === 'available_media')
         styleSheet.innerText = stylesAvailableMedia;
     else if (page === 'slots')
         styleSheet.innerText = stylesSlots;
     else if (page === 'cluster')
         styleSheet.innerText = stylesCluster;
+    else if (page === 'challenges')
+        styleSheet.innerText = stylesChallenges;
+    else if (page === 'challenge')
+        styleSheet.innerText = stylesChallenge;
     else if (page === 'statistics')
         styleSheet.innerText = stylesStatistics;
     else if (page === 'settings')
@@ -385,6 +464,8 @@ function setDarkMode(page, styleCodeClassName=null, index=0) {
         styleSheet.innerText = stylesUsers;
     else if (page === 'activity')
         styleSheet.innerText = stylesActivity;
+    else if (page === 'assessments')
+        styleSheet.innerText = stylesAssessments;
     document.head.appendChild(styleSheet);
 
     // Self progress
@@ -461,6 +542,26 @@ function requestSelf() {
             st_p.appendChild(st_secondary_text);
             return spent_time_block;
         }
+
+        // ULF manual
+        let manualUrl = "https://drive.google.com/file/d/1_wtEmxarOwn9X3H3ROL2jZMS-0iEz8zM/view?usp=sharing";
+        let ulf_mat_icon = document.createElement("mat-icon");
+        ulf_mat_icon.setAttribute("mattooltip", "Extension manual");
+        ulf_mat_icon.id = elemToCheckCreation+'3';
+        ulf_mat_icon.className = "mat-icon mat-tooltip-trigger material-icons mat-icon-no-color";
+        ulf_mat_icon.style.marginTop = "-4px";
+        ulf_mat_icon.innerHTML = `<a href="${manualUrl}" target="_blank"><svg style='width: 20px; border-radius: 25%;' ` +
+            "xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 186.66 186.89\"><defs><style>.cls-1{fill:#fff;}</style>" +
+            "</defs><path class=\"cls-1\" d=\"M219,123.94c-1.95-20-.32-40.12-.2-60.18.08-13.17-.35-26.84-2.95-39.78-4." +
+            "09-20.25-21-37.39-41.16-41.92-13.53-3-27.15-1.72-40.82-1.18L99.4-17.77,66-16.45c-8.36.32-16.92,1.13-25.35." +
+            "89-9.52-4-20.11-5.23-30.23-2.44C-.06-15.12-11.37-7-16.52,2.68c-5.33,10.1-8.08,22.25-4.87,33.51a29.71,29.71," +
+            "0,0,0-3.46,5.31c-7,14-10.75,28.9-9.66,44.68.63,9.09,2.36,18,2.82,27.17,1.15,22.51-.15,44.79,5.18,67,3.78,15" +
+            ".71,13.36,28.86,28.39,35.2a49.88,49.88,0,0,0,20,4.45c3,.12,5.93.07,8.89.1q15.3.15,30.6.19,30.61.09,61.21-.27" +
+            ",14.82-.17,29.62-.44,7.41-.13,14.81-.3c2.29-.05,4.61,0,6.91-.16,11.12-.6,21.05-3.4,29.93-10.26C231.36,187.54" +
+            ",221.81,153.21,219,123.94Z\"/><path d=\"M28.87,41.73H70.36c0,11.25,0,22.14,0,33,0,7.91-.14,15.82.06,23.72.37" +
+            ",14.32,6.85,21.34,19.84,21.82,16,.59,26.94-7.07,27.75-20.83.84-14.14.37-28.37.46-42.56,0-5,0-10,0-15.28h41.82" +
+            "v107.3H119.63V134c-16.41,15.63-35.1,19.36-55.45,16.94-22.12-2.63-34.65-14.58-35.69-36.7-1.12-23.66-.28-47.42" +
+            "-.28-71.14C28.21,42.75,28.54,42.41,28.87,41.73Z\" fill=\"#2b2e30\"/></svg></a>";
 
         function waitUntilPageLoads(section) {
             // Status
@@ -600,6 +701,16 @@ function requestSelf() {
                 moreInfoElem.appendChild(moreInfoElement("label", res['id'], 'User ID', styleCode));
             }
             else if (section === 4) {
+                let elem = document.getElementsByClassName("menu-right")[0];
+                if (!elem) {
+                    setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout, section);
+                    return;
+                }
+                if (document.getElementById(elemToCheckCreation+'3'))
+                    return;
+                elem.prepend(ulf_mat_icon);
+            }
+            else if (section === 5) {
                 let styleCode = getStyleCode('mat-chip');
                 if (!styleCode) {
                     setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout, section);
@@ -610,9 +721,15 @@ function requestSelf() {
                 textStatus.setAttribute(styleCode, '');
                 feedback_block.setAttribute(styleCode, '');
                 fb_mat_list.setAttribute(styleCode, '');
+                styleCode = getStyleCode('menu-right');
+                if (!styleCode) {
+                    setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout, section);
+                    return;
+                }
+                ulf_mat_icon.setAttribute(styleCode, '');
             }
         }
-        for (let section = 0; section <= 4; section++)
+        for (let section = 0; section <= 5; section++)
             waitUntilPageLoads(section);
     }
 }
