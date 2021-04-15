@@ -736,7 +736,7 @@ function requestSelf() {
                     }
                     return;
                 }
-                let elem = document.getElementsByClassName("mat-list mat-list-base ng-star-inserted")[0];
+                let elem = document.getElementsByClassName("mat-list-item mat-focus-indicator space-between ng-star-inserted")[0];
                 if (!elem) {
                     setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout, section);
                     return;
