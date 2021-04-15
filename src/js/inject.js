@@ -87,10 +87,11 @@ function urlHandler() {
     }
 }
 
-function requestSend(method, url, responseType='json', payload=null) {
+function requestSend(method, url, payload=null, responseType='json', auth=true) {
     const request = new XMLHttpRequest();
     request.open(method, url);
-    request.setRequestHeader('authorization', token);
+    if (auth)
+        request.setRequestHeader('authorization', token);
     if (payload)
         request.setRequestHeader('content-type', 'application/json');
     request.setRequestHeader('ext', 'true');
@@ -327,6 +328,10 @@ function setDarkMode(page=null, styleCodeClassName=null, index=0) {
         .demo-card-article__title a {
             color: #B9BBBE !important;
         }
+        .mat-dialog-container {
+            background:  #2f3136 !important;
+            color: #B9BBBE !important;
+        }
     `;
     let stylesChallenge = `
         .demo-card-article__title a, .mat-option {
@@ -422,14 +427,20 @@ function setDarkMode(page=null, styleCodeClassName=null, index=0) {
         .mat-button, .mat-icon-button, .mat-stroked-button, .mat-button-toggle-appearance-standard, .finish {
             color: #B9BBBE !important;
         }
+        .mat-accent .mat-slider-thumb, .mat-accent .mat-slider-thumb-label, .mat-accent .mat-slider-track-fill, .finish {
+            background-color: #5d78bb !important;
+        }
         .mat-button-toggle-appearance-standard {
             background: #393C43 !important;
         }
-        .mat-accent .mat-slider-thumb, .mat-accent .mat-slider-thumb-label, .mat-accent .mat-slider-track-fill {
-            background-color: #5d78bb !important;
+        .selected .mat-button-wrapper, button[aria-pressed="true"] .mat-button-toggle-label-content {
+            color: white !important;
         }
-        .finish {
-            background-color: #5d78bb !important;
+        .green button[aria-pressed="true"] .mat-button-toggle-label-content {
+            background: #96bf48;
+        }
+        .red button[aria-pressed="true"] .mat-button-toggle-label-content {
+            background: #e15f5f;
         }
     `;
 
@@ -562,6 +573,8 @@ function requestSelf() {
             ",14.32,6.85,21.34,19.84,21.82,16,.59,26.94-7.07,27.75-20.83.84-14.14.37-28.37.46-42.56,0-5,0-10,0-15.28h41.82" +
             "v107.3H119.63V134c-16.41,15.63-35.1,19.36-55.45,16.94-22.12-2.63-34.65-14.58-35.69-36.7-1.12-23.66-.28-47.42" +
             "-.28-71.14C28.21,42.75,28.54,42.41,28.87,41.73Z\" fill=\"#2b2e30\"/></svg></a>";
+
+        let scheduledResponse = null;
 
         function waitUntilPageLoads(section) {
             // Status
@@ -711,6 +724,56 @@ function requestSelf() {
                 elem.prepend(ulf_mat_icon);
             }
             else if (section === 5) {
+                if (!scheduledResponse) {
+                    let schedule_request = requestSend('GET', "https://lms.ucode.world/api/v0/frontend/slots/scheduled/");
+                    schedule_request.onload = function () {
+                        scheduledResponse = schedule_request.response;
+                        let assessor = scheduledResponse['as_assessor'];
+                        let assessed = scheduledResponse['as_assessed'];
+                        if (assessor.length === 0 && assessed.length === 0)
+                            return;
+                        waitUntilPageLoads(section);
+                    }
+                    return;
+                }
+                let elem = document.getElementsByClassName("mat-list mat-list-base ng-star-inserted")[0];
+                if (!elem) {
+                    setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout, section);
+                    return;
+                }
+                if (document.getElementById(elemToCheckCreation+'4'))
+                    return;
+                elem.id = elemToCheckCreation+'4';
+
+                let assessor = scheduledResponse['as_assessor'];
+                let assessed = scheduledResponse['as_assessed'];
+                let asAssessorIds = [];
+                assessor.forEach(value => asAssessorIds.push(value['id']));
+                let allSlots = assessor.concat(assessed);
+                allSlots.sort(function(a, b) {
+                    let keyA = new Date(a['begin_at']);
+                    let keyB = new Date(b['begin_at']);
+                    if (keyA < keyB) return -1;
+                    if (keyA > keyB) return 1;
+                    return 0;
+                });
+                function reqCycle(i) {
+                    if (i === allSlots.length)
+                        return;
+                    let slot = allSlots[i];
+                    let slot_info = requestSend('GET', "https://bumbot.ml/ucode/regass.php?id=" + slot['id'], null, 'json', false);
+                    slot_info.onload = function () {
+                        if (slot_info.status !== 404 && !slot['user']) {
+                            let username = asAssessorIds.includes(slot['id']) ? slot_info.response['assessed'] : slot_info.response['assessor'];
+                            let assessmentText = elem.getElementsByTagName('span')[i];
+                            assessmentText.innerHTML = assessmentText.innerHTML.replace("someone", `<a href="https://lms.ucode.world/users/${username}">${username}</a>`);
+                        }
+                        reqCycle(++i);
+                    }
+                }
+                reqCycle(0);
+            }
+            else if (section === 6) {
                 let styleCode = getStyleCode('mat-chip');
                 if (!styleCode) {
                     setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout, section);
@@ -729,8 +792,9 @@ function requestSelf() {
                 ulf_mat_icon.setAttribute(styleCode, '');
             }
         }
-        for (let section = 0; section <= 5; section++)
-            waitUntilPageLoads(section);
+        for (let section = 0; section <= 6; section++)
+            setTimeout(waitUntilPageLoads, 0, section);
+        chrome.storage.sync.set({username: res['username']}, () => {});
     }
 }
 
@@ -881,8 +945,8 @@ function requestSettings() {
                 button.removeAttribute("disabled");
                 button.onclick = () => {
                     let selfStatus = document.getElementById(input.id).value.replaceAll('"', '\\"');
-                    let payload = `{"socials":{"status":"${selfStatus}"}}`;
-                    setTimeout(requestSend, 1000, 'PATCH', `https://lms.ucode.world/api/v0/frontend/users/${selfId}/`, 'json', payload);
+                    let payload = JSON.stringify({"socials": {"status": selfStatus}});
+                    setTimeout(requestSend, 1000, 'PATCH', `https://lms.ucode.world/api/v0/frontend/users/${selfId}/`, payload);
                 }
             }
             else if (section === 2) {
@@ -920,7 +984,7 @@ function requestSettings() {
             }
         }
         for (let section = 0; section <= 3; section++)
-            waitUntilPageLoads(section);
+            setTimeout(waitUntilPageLoads, 0, section);
     }
 }
 
@@ -1003,7 +1067,7 @@ function requestUsers(id) {
             }
         }
         for (let section = 0; section <= 2; section++)
-            waitUntilPageLoads(section);
+            setTimeout(waitUntilPageLoads, 0, section);
     }
 }
 

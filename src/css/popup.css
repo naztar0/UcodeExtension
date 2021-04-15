@@ -150,3 +150,7 @@ a {
 .dark .group {
     border-color: #555;
 }
+.dark .selectableIcons:hover {
+    background: #666666;
+    transition: all ease-out 0.5s;
+}

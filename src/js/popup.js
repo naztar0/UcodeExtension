@@ -1,6 +1,7 @@
 let token = null;
 let url = null;
 let darkMode = false;
+let selfUsername = null;
 
 let downloadPdfMenu = document.getElementById('download-pdf').parentNode;
 let slotsMenu = document.getElementById('menuSlots').parentNode;
@@ -11,8 +12,9 @@ let statusText = document.getElementById('statusDetail');
 let header = document.getElementById('header');
 resetPopup();
 
-chrome.storage.sync.get(['token', 'url', 'dark_mode'], function (result) {
+chrome.storage.sync.get(['token', 'url', 'dark_mode', 'username'], function (result) {
     token = result.token;
+    selfUsername = result.username;
     if (result.dark_mode !== undefined) {
         darkMode = result.dark_mode;
         if (darkMode)
@@ -79,10 +81,11 @@ function urlHandler() {
     }
 }
 
-function requestSend(method, url, responseType='json', payload=null) {
+function requestSend(method, url, payload=null, responseType='json', auth=true) {
     const request = new XMLHttpRequest();
     request.open(method, url);
-    request.setRequestHeader('authorization', token);
+    if (auth)
+        request.setRequestHeader('authorization', token);
     if (payload)
         request.setRequestHeader('content-type', 'application/json');
     request.responseType = responseType;
@@ -163,7 +166,8 @@ function requestSlotsChallenge(challenge, mBegin=null) {
 
 function subscribeToAssessment(md5, challenge, begin) {
     assessorLoadingGif.style.display = "inline-block";
-    let request = requestSend('PUT', `https://lms.ucode.world/api/v0/frontend/slots/${md5}/subscribe-to-assessment/`, 'json', `{"challenge":"${challenge}"}`);
+    let request = requestSend('PUT', `https://lms.ucode.world/api/v0/frontend/slots/${md5}/subscribe-to-assessment/`,
+        JSON.stringify({"challenge": challenge}));
     request.onload = function () {
         if (request.status === 400) {
             document.getElementById("assessor-header").innerHTML = `Team already has assessment at ${begin}.<br>Trying again...`;
@@ -186,6 +190,8 @@ function subscribeToAssessment(md5, challenge, begin) {
             let elemImg = document.getElementById("assessor-img");
             elemName.innerText = resUser['username'];
             elemImg.src = "https://lms.ucode.world/api/" + resUser['photo_url'];
+            elemImg.style.border = resUser['workplace'] ? "5px solid #96bf48" : "5px solid #e15f5f";
+            elemImg.style.borderRadius = "50%";
             let cancelBtn = document.getElementById("cancel-assessment-button");
             let cancelTooltip = document.getElementById("cancel-assessment-tooltip");
             let tryAgainBtn = document.getElementById("try-again-button");
@@ -196,6 +202,8 @@ function subscribeToAssessment(md5, challenge, begin) {
             tryAgainBtn.onmouseout = () => tryAgainTooltip.style.display = "none";
             cancelBtn.onclick = () => cancelAssessment(id);
             tryAgainBtn.onclick = () => cancelAssessment(id, begin, challenge);
+            requestSend('POST', 'https://bumbot.ml/ucode/regass.php',
+                JSON.stringify({"id": id, "assessor": resUser['username'], "assessed": selfUsername}), 'text', false);
         }
     }
 }
