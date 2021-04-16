@@ -190,7 +190,7 @@ function subscribeToAssessment(md5, challenge, begin) {
             let elemImg = document.getElementById("assessor-img");
             elemName.innerText = resUser['username'];
             elemImg.src = "https://lms.ucode.world/api/" + resUser['photo_url'];
-            elemImg.style.border = resUser['workplace'] ? "5px solid #96bf48" : "5px solid #e15f5f";
+            elemImg.style.border = resUser['current_workplace'] ? "5px solid #96bf48" : "5px solid #e15f5f";
             elemImg.style.borderRadius = "50%";
             let cancelBtn = document.getElementById("cancel-assessment-button");
             let cancelTooltip = document.getElementById("cancel-assessment-tooltip");
