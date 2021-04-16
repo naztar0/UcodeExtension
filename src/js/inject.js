@@ -736,7 +736,7 @@ function requestSelf() {
                     }
                     return;
                 }
-                let elem = document.getElementsByClassName("mat-list-item mat-focus-indicator space-between ng-star-inserted")[0];
+                let elem = document.getElementsByClassName("mat-list mat-list-base ng-star-inserted")[0];
                 if (!elem) {
                     setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout, section);
                     return;
@@ -765,7 +765,8 @@ function requestSelf() {
                     slot_info.onload = function () {
                         if (slot_info.status !== 404 && !slot['user']) {
                             let username = asAssessorIds.includes(slot['id']) ? slot_info.response['assessed'] : slot_info.response['assessor'];
-                            let assessmentText = elem.getElementsByTagName('span')[i];
+                            let listItem = elem.getElementsByTagName('mat-list-item')[i];
+                            let assessmentText = listItem.getElementsByTagName('span')[0];
                             assessmentText.innerHTML = assessmentText.innerHTML.replace("someone", `<a href="https://lms.ucode.world/users/${username}">${username}</a>`);
                         }
                         reqCycle(++i);
