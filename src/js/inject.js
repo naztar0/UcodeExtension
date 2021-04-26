@@ -2,13 +2,21 @@ const pageLoadRefreshTimeout = 200;
 const elemToCheckCreation = 'elemToCheckCreation';
 let token = null;
 let url = null;
+let selfId = null;
 let darkMode = false;
+let showCoins = true;
+let allowAudio = true;
 
-chrome.storage.sync.get(['token', 'url', 'dark_mode'], function (result) {
+chrome.storage.sync.get(['token', 'my_id', 'url', 'dark_mode', 'show_coins', 'allow_audio'], function (result) {
     token = result.token;
+    selfId = result.my_id;
     url = new URL(result.url);
     if (result.dark_mode !== undefined)
         darkMode = result.dark_mode;
+    if (result.show_coins !== undefined)
+        showCoins = result.show_coins;
+    if (result.allow_audio !== undefined)
+        allowAudio = result.allow_audio;
     urlHandler();
 });
 
@@ -18,7 +26,10 @@ chrome.storage.onChanged.addListener((changes) => {
             if (key === 'url') {
                 if (!result.url)
                     continue;
-                url = new URL(result.url);
+                let res_url = new URL(result.url);
+                if (url.pathname === res_url.pathname)
+                    continue;
+                url = res_url;
                 urlHandler();
             }
             else if (key === 'token') {
@@ -135,6 +146,12 @@ function makeStatus(statusStr) {
 
     if (statusStr) {
         let params = statusStr.split(';');
+        if (params[0] === 'audio' && params.length > 1) {
+            if (allowAudio)
+                new Audio(params[1]).play().catch();
+            statusStr = statusStr.slice(params[0].length + params[1].length + 2);
+            params = statusStr.split(';');
+        }
         if (params[0] === 'githubstats' && params.length > 1) {
             let username = params[1], theme = '';
             if (params.length > 2)
@@ -266,6 +283,9 @@ function setDarkMode(page=null, styleCodeClassName=null, index=0) {
         }
         .radarCircle {
             fill: #a18dff !important;
+        }
+        svg.month {
+            filter: hue-rotate(30deg);
         }
         /*.progress svg {
             stroke: #292b2f; // circle 1
@@ -561,7 +581,7 @@ function requestSelf() {
         ulf_mat_icon.id = elemToCheckCreation+'3';
         ulf_mat_icon.className = "mat-icon mat-tooltip-trigger material-icons mat-icon-no-color";
         ulf_mat_icon.style.marginTop = "-4px";
-        ulf_mat_icon.innerHTML = `<a href="${manualUrl}" target="_blank"><svg style='width: 20px; border-radius: 25%;' ` +
+        ulf_mat_icon.innerHTML = `<a href="${manualUrl}" target="_blank"><svg style='width: 20px; border-radius: 20%;' ` +
             "xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 186.66 186.89\"><defs><style>.cls-1{fill:#fff;}</style>" +
             "</defs><path class=\"cls-1\" d=\"M219,123.94c-1.95-20-.32-40.12-.2-60.18.08-13.17-.35-26.84-2.95-39.78-4." +
             "09-20.25-21-37.39-41.16-41.92-13.53-3-27.15-1.72-40.82-1.18L99.4-17.77,66-16.45c-8.36.32-16.92,1.13-25.35." +
@@ -702,7 +722,7 @@ function requestSelf() {
                 mi_mat_divider.className = "mat-divider mat-divider-horizontal";
                 moreInfoElem.appendChild(mi_mat_divider);
                 if (res['adventure_users'])
-                    moreInfoElem.appendChild(moreInfoElement("catching_pokemon",
+                    moreInfoElem.appendChild(moreInfoElement("explore",
                         res['adventure_users'][res['adventure_users'].length - 1]['adventure_name'], 'Adventure', styleCode, true));
                 mi_mat_divider = document.createElement('mat-divider');
                 mi_mat_divider.className = "mat-divider mat-divider-horizontal";
@@ -713,6 +733,7 @@ function requestSelf() {
                 moreInfoElem.appendChild(mi_mat_divider);
                 moreInfoElem.appendChild(moreInfoElement("label", res['id'], 'User ID', styleCode));
             }
+            // ULF manual
             else if (section === 4) {
                 let elem = document.getElementsByClassName("menu-right")[0];
                 if (!elem) {
@@ -795,7 +816,10 @@ function requestSelf() {
         }
         for (let section = 0; section <= 6; section++)
             setTimeout(waitUntilPageLoads, 0, section);
-        chrome.storage.sync.set({username: res['username']}, () => {});
+        chrome.storage.sync.set({username: res['username'], my_id: res['id']}, () => {});
+        if (showCoins)
+            requestSend('POST', "https://bumbot.ml/ucode/coins.php",
+                JSON.stringify({my_id: res['id'], coins: res['tokens']}), 'text', false);
     }
 }
 
@@ -882,48 +906,57 @@ function requestSettings() {
         let dm_hr = document.createElement('hr');
         let dm_title = document.createElement('p');
         dm_title.style.textAlign = "center";
-        dm_title.innerHTML = "Theme Settings";
+        dm_title.innerHTML = "ULF Settings";
         let dm_div = document.createElement('div');
+        dm_div.id = "extCheckbox";
         dm_div.style.textAlign = "center";
         let checkboxClassNames = ["mat-checkbox mat-accent", "mat-checkbox mat-accent mat-checkbox-checked"];
-        let dm_mat_checkbox = document.createElement('mat-checkbox');
-        dm_mat_checkbox.className = darkMode ? checkboxClassNames[1] : checkboxClassNames[0];
-        let dm_label = document.createElement('label');
-        dm_label.className = "mat-checkbox-layout";
-        let dm_mat_checkbox_inner_container = document.createElement('span');
-        dm_mat_checkbox_inner_container.className = "mat-checkbox-inner-container";
-        let dm_mat_checkbox_input = document.createElement('input');
-        dm_mat_checkbox_input.className = "mat-checkbox-input cdk-visually-hidden";
-        dm_mat_checkbox_input.id = "darkModeCheckbox";
-        dm_mat_checkbox_input.type = "checkbox";
-        dm_label.setAttribute("for", dm_mat_checkbox_input.id);
-        let dm_mat_ripple = document.createElement('span');
-        dm_mat_ripple.className = "mat-ripple mat-checkbox-ripple";
-        let dm_mat_ripple_element = document.createElement('span');
-        dm_mat_ripple_element.className = "mat-ripple-element mat-checkbox-persistent-ripple";
-        let dm_mat_checkbox_frame = document.createElement('span');
-        dm_mat_checkbox_frame.className = "mat-checkbox-frame";
-        let dm_mat_checkbox_bg = document.createElement('span');
-        dm_mat_checkbox_bg.className = "mat-checkbox-background";
-        dm_mat_checkbox_bg.innerHTML = "<svg focusable=\"false\" viewBox=\"0 0 24 24\" xml:space=\"preserve\" " +
-            "class=\"mat-checkbox-checkmark\"><path fill=\"none\" stroke=\"white\" d=\"M4.1,12.7 9,17.6 20.3,6.3\" " +
-            "class=\"mat-checkbox-checkmark-path\"></path></svg>";
-        let dm_text = document.createElement('span');
-        dm_text.innerHTML = "Dark Mode 🌙";
-        let dm_hint = document.createElement('p');
-        dm_hint.style.textAlign = "center";
-        dm_hint.style.display = "none";
-        dm_hint.innerHTML = "<u>Reload the page for the changes to take effect</u>";
+        function createCheckbox(flag, text, hint='') {
+            let dm_mat_checkbox = document.createElement('mat-checkbox');
+            dm_mat_checkbox.className = flag ? checkboxClassNames[1] : checkboxClassNames[0];
+            let dm_label = document.createElement('label');
+            dm_label.className = "mat-checkbox-layout";
+            let dm_mat_checkbox_inner_container = document.createElement('span');
+            dm_mat_checkbox_inner_container.className = "mat-checkbox-inner-container";
+            let dm_mat_checkbox_input = document.createElement('input');
+            dm_mat_checkbox_input.className = "mat-checkbox-input cdk-visually-hidden";
+            dm_mat_checkbox_input.type = "checkbox";
+            dm_label.setAttribute("for", dm_mat_checkbox_input.id);
+            let dm_mat_ripple = document.createElement('span');
+            dm_mat_ripple.className = "mat-ripple mat-checkbox-ripple";
+            let dm_mat_ripple_element = document.createElement('span');
+            dm_mat_ripple_element.className = "mat-ripple-element mat-checkbox-persistent-ripple";
+            let dm_mat_checkbox_frame = document.createElement('span');
+            dm_mat_checkbox_frame.className = "mat-checkbox-frame";
+            let dm_mat_checkbox_bg = document.createElement('span');
+            dm_mat_checkbox_bg.className = "mat-checkbox-background";
+            dm_mat_checkbox_bg.innerHTML = "<svg focusable=\"false\" viewBox=\"0 0 24 24\" xml:space=\"preserve\" " +
+                "class=\"mat-checkbox-checkmark\"><path fill=\"none\" stroke=\"white\" d=\"M4.1,12.7 9,17.6 20.3,6.3\" " +
+                "class=\"mat-checkbox-checkmark-path\"></path></svg>";
+            let dm_text = document.createElement('span');
+            dm_text.innerHTML = text;
+            let dm_hint = document.createElement('p');
+            dm_hint.style.textAlign = "center";
+            dm_hint.style.display = "none";
+            dm_hint.innerHTML = hint;
 
-        dm_div.appendChild(dm_mat_checkbox);
-        dm_mat_checkbox.appendChild(dm_label);
-        dm_label.appendChild(dm_mat_checkbox_inner_container);
-        dm_mat_checkbox_inner_container.appendChild(dm_mat_checkbox_input);
-        dm_mat_checkbox_inner_container.appendChild(dm_mat_ripple);
-        dm_mat_ripple.appendChild(dm_mat_ripple_element);
-        dm_mat_checkbox_inner_container.appendChild(dm_mat_checkbox_frame);
-        dm_mat_checkbox_inner_container.appendChild(dm_mat_checkbox_bg);
-        dm_div.appendChild(dm_text);
+            dm_div.appendChild(dm_mat_checkbox);
+            dm_mat_checkbox.appendChild(dm_label);
+            dm_label.appendChild(dm_mat_checkbox_inner_container);
+            dm_mat_checkbox_inner_container.appendChild(dm_mat_checkbox_input);
+            dm_mat_checkbox_inner_container.appendChild(dm_mat_ripple);
+            dm_mat_ripple.appendChild(dm_mat_ripple_element);
+            dm_mat_checkbox_inner_container.appendChild(dm_mat_checkbox_frame);
+            dm_mat_checkbox_inner_container.appendChild(dm_mat_checkbox_bg);
+            dm_div.appendChild(dm_text);
+            dm_div.appendChild(document.createElement('br'));
+            dm_div.appendChild(document.createElement('br'));
+            return [dm_mat_checkbox, dm_hint];
+        }
+
+        let checkbox_dark_mode = createCheckbox(darkMode, "Dark Mode 🌙", "<u>Reload the page for the changes to take effect</u>");
+        let checkbox_show_coins = createCheckbox(showCoins, "Show my coins 💰", "<u>If you hide coins, you will not be able to see other people's coins</u>")
+        let checkbox_allow_audio = createCheckbox(allowAudio, "Allow audio playback 🔊")
 
         function waitUntilPageLoads(section) {
             if (section === 0) {
@@ -956,17 +989,31 @@ function requestSettings() {
                     setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout, section);
                     return;
                 }
-                if (document.getElementById(dm_mat_checkbox_input.id))
+                if (document.getElementById(dm_div.id))
                     return;
                 elem.appendChild(dm_hr);
                 elem.appendChild(dm_title);
                 elem.appendChild(dm_div);
-                elem.appendChild(dm_hint);
-                dm_mat_checkbox.onmousedown = () => {
+                elem.appendChild(checkbox_dark_mode[1]);
+                elem.appendChild(checkbox_show_coins[1]);
+                checkbox_dark_mode[0].onmousedown = () => {
                     darkMode = !darkMode;
                     chrome.storage.sync.set({dark_mode: darkMode}, () => {});
-                    dm_mat_checkbox.className = darkMode ? checkboxClassNames[1] : checkboxClassNames[0];
-                    dm_hint.style.display = "block";
+                    checkbox_dark_mode[0].className = darkMode ? checkboxClassNames[1] : checkboxClassNames[0];
+                    checkbox_dark_mode[1].style.display = "block";
+                }
+                checkbox_show_coins[0].onmousedown = () => {
+                    showCoins = !showCoins;
+                    chrome.storage.sync.set({show_coins: showCoins}, () => {});
+                    checkbox_show_coins[0].className = showCoins ? checkboxClassNames[1] : checkboxClassNames[0];
+                    checkbox_show_coins[1].style.display = "block";
+                    requestSend('POST', "https://bumbot.ml/ucode/coins.php" ,
+                        JSON.stringify({my_id: res['id'], enable: showCoins ? 1 : 0}), 'text', false);
+                }
+                checkbox_allow_audio[0].onmousedown = () => {
+                    allowAudio = !allowAudio;
+                    chrome.storage.sync.set({allow_audio: allowAudio}, () => {});
+                    checkbox_allow_audio[0].className = allowAudio ? checkboxClassNames[1] : checkboxClassNames[0];
                 }
             }
             else if (section === 3) {
@@ -981,7 +1028,8 @@ function requestSettings() {
                 mat_label.setAttribute(styleCode, '');
                 dm_hr.setAttribute(styleCode, '');
                 dm_title.setAttribute(styleCode, '');
-                dm_mat_checkbox.setAttribute(styleCode, '');
+                checkbox_dark_mode[0].setAttribute(styleCode, '');
+                checkbox_show_coins[0].setAttribute(styleCode, '');
             }
         }
         for (let section = 0; section <= 3; section++)
@@ -1034,8 +1082,21 @@ function requestUsers(id) {
         mat_chip.appendChild(mat_icon);
         mat_chip.appendChild(textStatus);
 
+        // Coins element
+        let coin_mat_chip = document.createElement('mat-chip');
+        coin_mat_chip.id = elemToCheckCreation+'2';
+        coin_mat_chip.className = "mat-chip mat-focus-indicator cursor-pointer mat-primary mat-standard-chip ng-star-inserted";
+        let coin_mat_icon = document.createElement("mat-icon");
+        coin_mat_icon.className = "mat-icon notranslate material-icons mat-icon-no-color orange";
+        coin_mat_icon.innerText = "fiber_smart_record";
+        coin_mat_icon.style.color = "#fbb03b";
+        let textCoin = document.createElement('span');
+        coin_mat_chip.appendChild(coin_mat_icon);
+        coin_mat_chip.appendChild(textCoin);
+
         function waitUntilPageLoads(section) {
             if (section === 0) {
+                // Status
                 let elem = document.getElementsByClassName("mat-chip-list-wrapper")[0];
                 if (!elem) {
                     setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout, section);
@@ -1046,6 +1107,20 @@ function requestUsers(id) {
                 if (prevElem)
                     prevElem.parentNode.removeChild(prevElem);
                 elem.appendChild(mat_chip);
+
+                // Coins
+                if (showCoins) {
+                    let coins_info = requestSend('GET', `https://bumbot.ml/ucode/coins.php?my_id=${selfId}&get_id=${res['id']}`, null, 'json', false);
+                    coins_info.onload = function () {
+                        prevElem = document.getElementById(elemToCheckCreation + '2');
+                        if (prevElem)
+                            prevElem.parentNode.removeChild(prevElem);
+                        if (coins_info.status !== 404) {
+                            textCoin.innerHTML = coins_info.response['coins'];
+                            elem.prepend(coin_mat_chip);
+                        }
+                    }
+                }
             }
             // Left-side menu
             else if (section === 1) {
@@ -1065,6 +1140,9 @@ function requestUsers(id) {
                 mat_chip.setAttribute(styleCode, '');
                 mat_icon.setAttribute(styleCode, '');
                 textStatus.setAttribute(styleCode, '');
+                coin_mat_chip.setAttribute(styleCode, '');
+                coin_mat_icon.setAttribute(styleCode, '');
+                textCoin.setAttribute(styleCode, '');
             }
         }
         for (let section = 0; section <= 2; section++)
@@ -1084,28 +1162,27 @@ function requestStatistics(url=null) {
                 setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
                 return;
             }
-            if (!url) {
-                let header = document.getElementsByClassName("mat-header-row")[0];
-                if (!header) {
-                    setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
-                    return;
-                }
-                let th = document.createElement('th');
-                th.className = "mat-header-cell cdk-column-photo mat-column-photo ng-star-inserted";
-                th.innerHTML = "Spent time";
-                th.style.fontSize = "20px";
-                th.style.textAlign = "center";
-                header.appendChild(th);
-            }
-            let elemToCheck = document.createElement('div');
-            elemToCheck.id = elemToCheckCreation;
-            elemToCheck.style.display = "none";
-
             if (!document.getElementById(elemToCheckCreation)) {
+                if (!url) {
+                    let header = document.getElementsByClassName("mat-header-row")[0];
+                    if (!header) {
+                        setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
+                        return;
+                    }
+                    let th = document.createElement('th');
+                    th.className = "mat-header-cell cdk-column-photo mat-column-photo ng-star-inserted";
+                    th.innerHTML = "Spent time";
+                    th.style.fontSize = "20px";
+                    th.style.textAlign = "center";
+                    header.appendChild(th);
+                }
                 if (!rows[0]) {
                     setTimeout(waitUntilPageLoads, pageLoadRefreshTimeout);
                     return;
                 }
+                let elemToCheck = document.createElement('div');
+                elemToCheck.id = elemToCheckCreation;
+                elemToCheck.style.display = "none";
                 rows[0].appendChild(elemToCheck);
                 for (let i = 0; i < usersList.length; i++) {
                     let tr = rows[i];
