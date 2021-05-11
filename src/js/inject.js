@@ -156,15 +156,15 @@ function makeStatus(statusStr) {
             let username = params[1], theme = '';
             if (params.length > 2)
                 theme = params[2];
-            return `<img src="https://github-readme-stats.vercel.app/api?username=${username}&theme=${theme}&count_private=true"
-                    style="width: 250px; border-radius: 13px; margin-left: -33px; margin-top: 5px;" alt="">`;
+            return [`<img src="https://github-readme-stats.vercel.app/api?username=${username}&theme=${theme}&count_private=true"
+                    style="width: 250px; border-radius: 13px; margin-left: -13px; margin-top: 5px;" alt="">`, false];
         }
         else if (params[0] === 'img' && params.length > 1) {
             let img = params[1], link = '#';
             if (params.length > 2)
                 link = params[2];
-            return `<a href="${link}"><img src="${img}" 
-                    style="width: 245px; border-radius: 10px; margin-left: -30px; margin-top: 7px; margin-bottom: 4px;" alt=""></a>`;
+            return [`<a href="${link}"><img src="${img}" 
+                    style="width: 245px; border-radius: 10px; margin-left: -10px; margin-top: 7px; margin-bottom: 4px;" alt=""></a>`, false];
         }
         else {
             Object.keys(emojis).forEach(key => {
@@ -175,7 +175,7 @@ function makeStatus(statusStr) {
     else {
         statusStr = '';
     }
-    return statusStr;
+    return [statusStr, true];
 }
 
 function secondsToDays(seconds) {
@@ -526,9 +526,11 @@ function requestSelf() {
         mat_icon.className = "mat-icon notranslate material-icons mat-icon-no-color";
         mat_icon.innerText = "info";
         let textStatus = document.createElement('span');
+        let statusObj = makeStatus(res['socials']['status']);
         if (res['socials'])
-            textStatus.innerHTML = makeStatus(res['socials']['status']);
-        mat_chip.appendChild(mat_icon);
+            textStatus.innerHTML = statusObj[0];
+        if (statusObj[1])
+            mat_chip.appendChild(mat_icon);
         mat_chip.appendChild(textStatus);
 
         // Feedback comments element
@@ -1077,9 +1079,11 @@ function requestUsers(id) {
         mat_icon.className = "mat-icon notranslate material-icons mat-icon-no-color";
         mat_icon.innerText = "info";
         let textStatus = document.createElement('span');
+        let statusObj = makeStatus(res['socials']['status']);
         if (res['socials'])
-            textStatus.innerHTML = makeStatus(res['socials']['status']);
-        mat_chip.appendChild(mat_icon);
+            textStatus.innerHTML = statusObj[0];
+        if (statusObj[1])
+            mat_chip.appendChild(mat_icon);
         mat_chip.appendChild(textStatus);
 
         // Coins element
