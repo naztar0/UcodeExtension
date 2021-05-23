@@ -144,38 +144,40 @@ function makeStatus(statusStr) {
         return `<img src="${imgUrl}" style="height:20px;margin-left:2px;margin-bottom:-5px;" alt="">`;
     }
 
-    if (statusStr) {
-        let params = statusStr.split(';');
+    let status = {data: statusStr || '', showIcon: true, audio: null};
+
+    if (status.data) {
+        let params = status.data.split(';');
         if (params[0] === 'audio' && params.length > 1) {
+            status.audio = params[1];
             if (allowAudio)
-                new Audio(params[1]).play().catch();
-            statusStr = statusStr.slice(params[0].length + params[1].length + 2);
-            params = statusStr.split(';');
+                new Audio(status.audio).play().catch();
+            status.data = status.data.slice(params[0].length + params[1].length + 2);
+            params = status.data.split(';');
         }
         if (params[0] === 'githubstats' && params.length > 1) {
             let username = params[1], theme = '';
             if (params.length > 2)
                 theme = params[2];
-            return [`<img src="https://github-readme-stats.vercel.app/api?username=${username}&theme=${theme}&count_private=true"
-                    style="width: 250px; border-radius: 13px; margin-left: -13px; margin-top: 5px;" alt="">`, false];
+            status.showIcon = false;
+            status.data = `<img src="https://github-readme-stats.vercel.app/api?username=${username}&theme=${theme}&count_private=true"
+                    style="width: 250px; border-radius: 13px; margin-left: -13px; margin-top: 5px;" alt="">`;
         }
         else if (params[0] === 'img' && params.length > 1) {
-            let img = params[1], link = '#';
+            let img = params[1], link = 'javascript:void(0)';
             if (params.length > 2)
                 link = params[2];
-            return [`<a href="${link}"><img src="${img}" 
-                    style="width: 245px; border-radius: 10px; margin-left: -10px; margin-top: 7px; margin-bottom: 4px;" alt=""></a>`, false];
+            status.showIcon = false;
+            status.data = `<a href="${link}"><img src="${img}" 
+                    style="width: 245px; border-radius: 10px; margin-left: -10px; margin-top: 7px; margin-bottom: 4px;" alt=""></a>`;
         }
         else {
             Object.keys(emojis).forEach(key => {
-                statusStr = statusStr.replaceAll(key, wrap(emojis[key]));
+                status.data = status.data.replaceAll(key, wrap(emojis[key]));
             });
         }
     }
-    else {
-        statusStr = '';
-    }
-    return [statusStr, true];
+    return status;
 }
 
 function secondsToDays(seconds) {
@@ -428,6 +430,9 @@ function setDarkMode(page=null, styleCodeClassName=null, index=0) {
         .radarCircle {
             fill: #a18dff !important;
         }
+        svg.month {
+            filter: hue-rotate(30deg);
+        }
     `;
     let stylesActivity = `
         .mat-list-base .mat-subheader {
@@ -526,12 +531,22 @@ function requestSelf() {
         mat_icon.className = "mat-icon notranslate material-icons mat-icon-no-color";
         mat_icon.innerText = "info";
         let textStatus = document.createElement('span');
-        let statusObj = makeStatus(res['socials']['status']);
-        if (res['socials'])
-            textStatus.innerHTML = statusObj[0];
-        if (statusObj[1])
+        if (res['socials']) {
+            let statusObj = makeStatus(res['socials']['status']);
+            textStatus.innerHTML = statusObj.data;
+            if (statusObj.showIcon)
+                mat_chip.appendChild(mat_icon);
+            if (statusObj.audio)
+                mat_chip.onclick = () => new Audio(statusObj.audio).play().catch();
+            mat_chip.appendChild(textStatus);
+        }
+        else {
+            textStatus.innerHTML = "You must have at least one social link to change the status";
+            textStatus.style.color = "#e15f5f";
+            textStatus.style.textAlign = "center";
             mat_chip.appendChild(mat_icon);
-        mat_chip.appendChild(textStatus);
+            mat_chip.appendChild(textStatus);
+        }
 
         // Feedback comments element
         let feedback_block = document.createElement('div');
@@ -1069,22 +1084,25 @@ function requestUsers(id) {
 
         // Status element
         let mat_chip = document.createElement('mat-chip');
-        mat_chip.id = elemToCheckCreation;
-        mat_chip.className = "mat-chip mat-focus-indicator cursor-pointer mat-primary mat-standard-chip ng-star-inserted";
-        mat_chip.style.margin = "7px auto";
-        mat_chip.style.maxWidth = "260px";
-        mat_chip.style.height = "auto";
-        mat_chip.style.minHeight = "32px";
         let mat_icon = document.createElement("mat-icon");
-        mat_icon.className = "mat-icon notranslate material-icons mat-icon-no-color";
-        mat_icon.innerText = "info";
         let textStatus = document.createElement('span');
-        let statusObj = makeStatus(res['socials']['status']);
-        if (res['socials'])
-            textStatus.innerHTML = statusObj[0];
-        if (statusObj[1])
-            mat_chip.appendChild(mat_icon);
-        mat_chip.appendChild(textStatus);
+        if (res['socials'] && res['socials']['status']) {
+            mat_chip.id = elemToCheckCreation;
+            mat_chip.className = "mat-chip mat-focus-indicator cursor-pointer mat-primary mat-standard-chip ng-star-inserted";
+            mat_chip.style.margin = "7px auto";
+            mat_chip.style.maxWidth = "260px";
+            mat_chip.style.height = "auto";
+            mat_chip.style.minHeight = "32px";
+            mat_icon.className = "mat-icon notranslate material-icons mat-icon-no-color";
+            mat_icon.innerText = "info";
+            let statusObj = makeStatus(res['socials']['status']);
+            textStatus.innerHTML = statusObj.data;
+            if (statusObj.showIcon)
+                mat_chip.appendChild(mat_icon);
+            if (statusObj.audio)
+                mat_chip.onclick = () => new Audio(statusObj.audio).play().catch();
+            mat_chip.appendChild(textStatus);
+        }
 
         // Coins element
         let coin_mat_chip = document.createElement('mat-chip');
